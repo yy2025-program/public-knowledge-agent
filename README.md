@@ -13,7 +13,7 @@
    git add .
    git commit -m "Initial commit"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/ai-knowledge-agent.git
+   git remote add origin https://github.com/yy2025-program/public-knowledge-agent.git
    git push -u origin main
    
    # 2. 在GitHub仓库设置中启用Pages
@@ -59,8 +59,8 @@ ai-knowledge-agent/
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/YOUR_USERNAME/ai-knowledge-agent.git
-cd ai-knowledge-agent
+git clone https://github.com/yy2025-program/public-knowledge-agent.git
+cd public-knowledge-agent
 
 # 2. 安装依赖
 pip install -r requirements.txt
