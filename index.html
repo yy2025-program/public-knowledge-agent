@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Knowledge Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 800px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #4f46e5;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            background: #4f46e5;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .bot-message {
+            background: white;
+            border: 1px solid #e2e8f0;
+            margin-right: auto;
+        }
+        
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .input-area input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .input-area button {
+            padding: 12px 24px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        .input-area button:hover {
+            background: #4338ca;
+        }
+        
+        .input-area button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <h1>🤖 AI Knowledge Agent</h1>
+            <p>基于网页爬取的智能问答助手</p>
+        </div>
+        
+        <div id="chatBox" class="chat-box">
+            <div class="message bot-message">
+                👋 你好！我是AI知识助手，可以回答基于爬取网页内容的专业问题。请问有什么可以帮助您的吗？
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            🤔 正在思考中...
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="questionInput" placeholder="输入您的问题..." onkeypress="handleKeyPress(event)">
+            <button onclick="askQuestion()" id="askButton">发送</button>
+        </div>
+    </div>
+
+    <script>
+        // 模拟知识库数据（实际项目中会从API获取）
+        const mockKnowledge = {
+            "人工智能": "人工智能（AI）是计算机科学的一个分支，致力于创建能够执行通常需要人类智能的任务的系统...",
+            "机器学习": "机器学习是人工智能的一个子集，它使计算机能够在没有明确编程的情况下学习和改进...",
+            "深度学习": "深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的工作方式..."
+        };
+
+        async function askQuestion() {
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) return;
+
+            // 禁用输入和按钮
+            questionInput.disabled = true;
+            document.getElementById('askButton').disabled = true;
+            document.getElementById('loading').style.display = 'block';
+
+            // 显示用户问题
+            addMessage('user', question);
+            questionInput.value = '';
+
+            try {
+                // 模拟API调用延迟
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 简单的关键词匹配（实际项目中会调用真实API）
+                let answer = "抱歉，我暂时没有找到相关信息。";
+                
+                for (const [key, value] of Object.entries(mockKnowledge)) {
+                    if (question.includes(key)) {
+                        answer = value;
+                        break;
+                    }
+                }
+                
+                // 如果没有匹配，提供通用回答
+                if (answer === "抱歉，我暂时没有找到相关信息。") {
+                    answer = `关于"${question}"的问题很有趣！目前我的知识库正在不断更新中，建议您可以尝试更具体的关键词，或者稍后再试。`;
+                }
+                
+                addMessage('bot', answer);
+                
+            } catch (error) {
+                addMessage('bot', '抱歉，服务暂时不可用，请稍后再试。');
+            } finally {
+                // 恢复输入状态
+                questionInput.disabled = false;
+                document.getElementById('askButton').disabled = false;
+                document.getElementById('loading').style.display = 'none';
+                questionInput.focus();
+            }
+        }
+
+        function addMessage(sender, message) {
+            const chatBox = document.getElementById('chatBox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = message;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                askQuestion();
+            }
+        }
+
+        // 页面加载完成后聚焦输入框
+        window.onload = function() {
+            document.getElementById('questionInput').focus();
+        };
+    </script>
+</body>
+</html>
