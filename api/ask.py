@@ -33,17 +33,35 @@ class handler(BaseHTTPRequestHandler):
             
             # 查找匹配的答案
             answer = "抱歉，我暂时没有找到相关信息。"
+            matched = False
+            
+            # 更精确的关键词匹配
             for keyword, content in knowledge_base.items():
                 if keyword in question:
                     answer = content
+                    matched = True
                     break
             
-            # 如果没有直接匹配，提供智能回答
+            # 如果没有精确匹配，尝试模糊匹配
+            if not matched:
+                question_lower = question.lower()
+                if any(word in question_lower for word in ["ai", "智能", "artificial"]):
+                    answer = knowledge_base["人工智能"]
+                elif any(word in question_lower for word in ["学习", "learning", "ml"]):
+                    answer = knowledge_base["机器学习"]
+                elif any(word in question_lower for word in ["神经", "网络", "deep", "深度"]):
+                    answer = knowledge_base["深度学习"]
+                elif any(word in question_lower for word in ["爬虫", "spider", "crawl", "scrape"]):
+                    answer = knowledge_base["爬虫"]
+                elif any(word in question_lower for word in ["api", "接口", "interface"]):
+                    answer = knowledge_base["API"]
+            
+            # 如果仍然没有匹配，提供智能回答
             if answer == "抱歉，我暂时没有找到相关信息。":
-                if any(word in question for word in ["什么", "如何", "怎么", "为什么"]):
-                    answer = f"关于'{question}'的问题很有价值！我的知识库正在不断更新中。目前我可以回答关于人工智能、机器学习、深度学习、爬虫和API等技术话题的问题。"
+                if any(word in question for word in ["什么", "如何", "怎么", "为什么", "是什么"]):
+                    answer = f"关于'{question}'的问题很有价值！我的知识库目前包含人工智能、机器学习、深度学习、爬虫和API等技术话题。请尝试询问这些领域的具体问题。"
                 else:
-                    answer = "请尝试询问更具体的技术问题，比如'什么是人工智能'或'如何使用爬虫'等。"
+                    answer = "请尝试询问更具体的技术问题，比如'什么是人工智能'、'如何使用机器学习'或'爬虫是什么'等。"
             
             response = {
                 "answer": answer,
