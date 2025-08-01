@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Knowledge Agent - 管理面板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: #4f46e5;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #4f46e5;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        .btn:hover {
+            background: #4338ca;
+        }
+        
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .status.success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .status.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .status.info {
+            background: #f0f9ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .result-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛠️ AI Knowledge Agent 管理面板</h1>
+        <p>管理您的知识库内容和爬虫任务</p>
+    </div>
+
+    <div class="container">
+        <!-- API状态检查 -->
+        <div class="card">
+            <h2>📊 系统状态</h2>
+            <div id="systemStatus">
+                <div class="status info">正在检查系统状态...</div>
+            </div>
+            <button class="btn btn-secondary" onclick="checkSystemStatus()">刷新状态</button>
+        </div>
+
+        <div class="grid">
+            <!-- 网页爬取 -->
+            <div class="card">
+                <h2>🕷️ 网页爬取</h2>
+                <div class="form-group">
+                    <label for="crawlUrl">网页URL:</label>
+                    <input type="url" id="crawlUrl" placeholder="https://example.com">
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="useFirecrawl">
+                    <label for="useFirecrawl">使用FireCrawl (需要API密钥)</label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="autoStore" checked>
+                    <label for="autoStore">自动存储到数据库</label>
+                </div>
+                
+                <button class="btn" onclick="crawlWebsite()" id="crawlBtn">开始爬取</button>
+                
+                <div id="crawlResult" class="result-box" style="display: none;"></div>
+            </div>
+
+            <!-- 内容管理 -->
+            <div class="card">
+                <h2>📚 内容管理</h2>
+                <div class="form-group">
+                    <label for="searchQuery">搜索内容:</label>
+                    <input type="text" id="searchQuery" placeholder="输入关键词搜索">
+                </div>
+                
+                <button class="btn" onclick="searchContent()">搜索</button>
+                <button class="btn btn-secondary" onclick="listAllContent()">列出所有内容</button>
+                
+                <div id="contentResult" class="result-box" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- 手动添加内容 -->
+        <div class="card">
+            <h2>✏️ 手动添加内容</h2>
+            <div class="grid">
+                <div class="form-group">
+                    <label for="manualTitle">标题:</label>
+                    <input type="text" id="manualTitle" placeholder="文章标题">
+                </div>
+                
+                <div class="form-group">
+                    <label for="manualUrl">来源URL (可选):</label>
+                    <input type="url" id="manualUrl" placeholder="https://example.com">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="manualContent">内容:</label>
+                <textarea id="manualContent" placeholder="输入文章内容..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="manualCategory">分类:</label>
+                <select id="manualCategory">
+                    <option value="technology">技术</option>
+                    <option value="ai">人工智能</option>
+                    <option value="programming">编程</option>
+                    <option value="tutorial">教程</option>
+                    <option value="news">新闻</option>
+                    <option value="other">其他</option>
+                </select>
+            </div>
+            
+            <button class="btn" onclick="addManualContent()">添加内容</button>
+        </div>
+
+        <!-- 测试问答 -->
+        <div class="card">
+            <h2>🤖 测试问答</h2>
+            <div class="form-group">
+                <label for="testQuestion">测试问题:</label>
+                <input type="text" id="testQuestion" placeholder="输入问题测试AI回答">
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="useDatabase" checked>
+                <label for="useDatabase">搜索数据库</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="useAI">
+                <label for="useAI">使用AI增强 (需要API密钥)</label>
+            </div>
+            
+            <button class="btn" onclick="testQuestion()">测试问答</button>
+            
+            <div id="testResult" class="result-box" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://public-knowledge-agent.vercel.app';
+
+        // 页面加载时检查系统状态
+        window.onload = function() {
+            checkSystemStatus();
+        };
+
+        async function checkSystemStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            statusDiv.innerHTML = '<div class="status info">正在检查系统状态...</div>';
+
+            try {
+                // 检查各个API端点
+                const endpoints = [
+                    { name: 'Ask API', url: '/api/ask' },
+                    { name: 'Crawl API', url: '/api/crawl' },
+                    { name: 'Database API', url: '/api/database' }
+                ];
+
+                let statusHTML = '';
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}${endpoint.url}`);
+                        const data = await response.json();
+                        
+                        if (response.ok && data.status === 'ok') {
+                            statusHTML += `<div class="status success">✅ ${endpoint.name}: 正常运行</div>`;
+                            
+                            // 显示功能状态
+                            if (data.features) {
+                                const features = Object.entries(data.features)
+                                    .map(([key, value]) => `${key}: ${value ? '✅' : '❌'}`)
+                                    .join(', ');
+                                statusHTML += `<div class="status info">功能状态: ${features}</div>`;
+                            }
+                        } else {
+                            statusHTML += `<div class="status error">❌ ${endpoint.name}: 响应异常</div>`;
+                        }
+                    } catch (error) {
+                        statusHTML += `<div class="status error">❌ ${endpoint.name}: 连接失败</div>`;
+                    }
+                }
+
+                statusDiv.innerHTML = statusHTML;
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">系统状态检查失败</div>';
+            }
+        }
+
+        async function crawlWebsite() {
+            const url = document.getElementById('crawlUrl').value;
+            const useFirecrawl = document.getElementById('useFirecrawl').checked;
+            const autoStore = document.getElementById('autoStore').checked;
+            const resultDiv = document.getElementById('crawlResult');
+            const btn = document.getElementById('crawlBtn');
+
+            if (!url) {
+                alert('请输入URL');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '爬取中...';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="status info">正在爬取网页...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/crawl`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        url: url,
+                        use_firecrawl: useFirecrawl
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    let resultHTML = `
+                        <div class="status success">✅ 爬取成功</div>
+                        <p><strong>标题:</strong> ${data.title}</p>
+                        <p><strong>方法:</strong> ${data.method}</p>
+                        <p><strong>时间:</strong> ${data.scraped_at}</p>
+                        <p><strong>内容预览:</strong></p>
+                        <div style="background: white; padding: 10px; border-radius: 5px; max-height: 200px; overflow-y: auto;">
+                            ${data.content.substring(0, 500)}${data.content.length > 500 ? '...' : ''}
+                        </div>
+                    `;
+
+                    // 如果启用自动存储
+                    if (autoStore) {
+                        try {
+                            const storeResponse = await fetch(`${API_BASE_URL}/api/database`, {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    action: 'store_article',
+                                    url: url,
+                                    title: data.title,
+                                    content: data.content,
+                                    category: 'crawled',
+                                    scraped_at: data.scraped_at
+                                })
+                            });
+
+                            const storeData = await storeResponse.json();
+                            if (storeData.success) {
+                                resultHTML += '<div class="status success">✅ 已自动存储到数据库</div>';
+                            } else {
+                                resultHTML += '<div class="status error">❌ 存储失败: ' + storeData.message + '</div>';
+                            }
+                        } catch (error) {
+                            resultHTML += '<div class="status error">❌ 存储时出错</div>';
+                        }
+                    }
+
+                    resultDiv.innerHTML = resultHTML;
+                } else {
+                    resultDiv.innerHTML = `<div class="status error">❌ 爬取失败: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="status error">❌ 请求失败，请检查网络连接</div>';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '开始爬取';
+            }
+        }
+
+        async function searchContent() {
+            const query = document.getElementById('searchQuery').value;
+            const resultDiv = document.getElementById('contentResult');
+
+            if (!query) {
+                alert('请输入搜索关键词');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="status info">正在搜索...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/database`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        action: 'search_articles',
+                        query: query,
+                        limit: 10
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.articles.length > 0) {
+                    let resultHTML = `<div class="status success">✅ 找到 ${data.count} 条结果</div>`;
+                    
+                    data.articles.forEach((article, index) => {
+                        resultHTML += `
+                            <div style="border-bottom: 1px solid #e2e8f0; padding: 10px 0;">
+                                <h4>${article.title || '无标题'}</h4>
+                                <p style="color: #6b7280; font-size: 12px;">
+                                    ${article.url || '无URL'} | ${article.category || '未分类'}
+                                </p>
+                                <p>${(article.content || '').substring(0, 200)}...</p>
+                            </div>
+                        `;
+                    });
+
+                    resultDiv.innerHTML = resultHTML;
+                } else {
+                    resultDiv.innerHTML = '<div class="status info">没有找到相关内容</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="status error">❌ 搜索失败</div>';
+            }
+        }
+
+        async function addManualContent() {
+            const title = document.getElementById('manualTitle').value;
+            const url = document.getElementById('manualUrl').value;
+            const content = document.getElementById('manualContent').value;
+            const category = document.getElementById('manualCategory').value;
+
+            if (!title || !content) {
+                alert('请填写标题和内容');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/database`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        action: 'store_article',
+                        title: title,
+                        url: url || 'manual_input',
+                        content: content,
+                        category: category,
+                        scraped_at: new Date().toISOString()
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ 内容添加成功！');
+                    // 清空表单
+                    document.getElementById('manualTitle').value = '';
+                    document.getElementById('manualUrl').value = '';
+                    document.getElementById('manualContent').value = '';
+                } else {
+                    alert('❌ 添加失败: ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ 请求失败');
+            }
+        }
+
+        async function testQuestion() {
+            const question = document.getElementById('testQuestion').value;
+            const useDatabase = document.getElementById('useDatabase').checked;
+            const useAI = document.getElementById('useAI').checked;
+            const resultDiv = document.getElementById('testResult');
+
+            if (!question) {
+                alert('请输入测试问题');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="status info">正在生成回答...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ask`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        question: question,
+                        search_database: useDatabase,
+                        use_ai: useAI
+                    })
+                });
+
+                const data = await response.json();
+
+                let resultHTML = `
+                    <div class="status success">✅ 回答生成完成</div>
+                    <p><strong>问题:</strong> ${question}</p>
+                    <p><strong>置信度:</strong> ${(data.confidence * 100).toFixed(1)}%</p>
+                    <p><strong>信息来源:</strong> ${data.sources.map(s => s.type).join(', ')}</p>
+                    <div style="background: white; padding: 15px; border-radius: 5px; margin-top: 10px;">
+                        <strong>回答:</strong><br>
+                        ${data.answer}
+                    </div>
+                `;
+
+                if (data.features_used) {
+                    const features = Object.entries(data.features_used)
+                        .map(([key, value]) => `${key}: ${value ? '✅' : '❌'}`)
+                        .join(', ');
+                    resultHTML += `<p style="color: #6b7280; font-size: 12px; margin-top: 10px;">使用的功能: ${features}</p>`;
+                }
+
+                resultDiv.innerHTML = resultHTML;
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="status error">❌ 测试失败</div>';
+            }
+        }
+
+        function listAllContent() {
+            // 搜索空字符串来获取所有内容
+            document.getElementById('searchQuery').value = '';
+            searchContent();
+        }
+    </script>
+</body>
+</html>
