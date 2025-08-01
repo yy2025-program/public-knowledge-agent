@@ -39,6 +39,24 @@
             text-align: center;
         }
         
+        .api-status {
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+            background: #f0f9ff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .api-status.connected {
+            background: #f0fdf4;
+            color: #166534;
+        }
+        
+        .api-status.disconnected {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        
         .chat-box {
             flex: 1;
             padding: 20px;
@@ -123,6 +141,10 @@
             <p>基于网页爬取的智能问答助手</p>
         </div>
         
+        <div id="apiStatus" class="api-status">
+            🔄 正在检测API连接状态...
+        </div>
+        
         <div id="chatBox" class="chat-box">
             <div class="message bot-message">
                 👋 你好！我是AI知识助手，可以回答基于爬取网页内容的专业问题。请问有什么可以帮助您的吗？
@@ -140,11 +162,42 @@
     </div>
 
     <script>
-        // 模拟知识库数据（实际项目中会从API获取）
+        // API配置
+        const API_BASE_URL = 'https://public-knowledge-agent.vercel.app';
+        let useRealAPI = false;
+
+        // 检测API连接状态
+        async function checkAPIStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ask`, {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    useRealAPI = true;
+                    updateAPIStatus('connected', '✅ API已连接 - 使用实时问答');
+                } else {
+                    throw new Error('API响应错误');
+                }
+            } catch (error) {
+                useRealAPI = false;
+                updateAPIStatus('disconnected', '⚠️ API未连接 - 使用模拟数据');
+            }
+        }
+
+        function updateAPIStatus(status, message) {
+            const statusElement = document.getElementById('apiStatus');
+            statusElement.className = `api-status ${status}`;
+            statusElement.textContent = message;
+        }
+
+        // 模拟知识库数据
         const mockKnowledge = {
             "人工智能": "人工智能（AI）是计算机科学的一个分支，致力于创建能够执行通常需要人类智能的任务的系统...",
             "机器学习": "机器学习是人工智能的一个子集，它使计算机能够在没有明确编程的情况下学习和改进...",
-            "深度学习": "深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的工作方式..."
+            "深度学习": "深度学习是机器学习的一个子集，使用多层神经网络来模拟人脑的工作方式...",
+            "爬虫": "网络爬虫是一种自动化程序，用于从网站提取数据...",
+            "API": "API（应用程序编程接口）是不同软件应用程序之间通信的桥梁..."
         };
 
         async function askQuestion() {
@@ -163,22 +216,40 @@
             questionInput.value = '';
 
             try {
-                // 模拟API调用延迟
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                let answer;
                 
-                // 简单的关键词匹配（实际项目中会调用真实API）
-                let answer = "抱歉，我暂时没有找到相关信息。";
-                
-                for (const [key, value] of Object.entries(mockKnowledge)) {
-                    if (question.includes(key)) {
-                        answer = value;
-                        break;
+                if (useRealAPI) {
+                    // 使用真实API
+                    const response = await fetch(`${API_BASE_URL}/api/ask`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({question: question})
+                    });
+                    
+                    const data = await response.json();
+                    answer = data.answer;
+                } else {
+                    // 使用模拟数据
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    answer = "抱歉，我暂时没有找到相关信息。";
+                    const questionLower = question.toLowerCase();
+                    
+                    for (const [key, value] of Object.entries(mockKnowledge)) {
+                        if (question.includes(key) || 
+                            (key === "人工智能" && (questionLower.includes("ai") || questionLower.includes("智能"))) ||
+                            (key === "机器学习" && (questionLower.includes("学习") || questionLower.includes("ml"))) ||
+                            (key === "深度学习" && (questionLower.includes("深度") || questionLower.includes("神经"))) ||
+                            (key === "爬虫" && questionLower.includes("爬虫")) ||
+                            (key === "API" && questionLower.includes("api"))) {
+                            answer = value;
+                            break;
+                        }
                     }
-                }
-                
-                // 如果没有匹配，提供通用回答
-                if (answer === "抱歉，我暂时没有找到相关信息。") {
-                    answer = `关于"${question}"的问题很有趣！目前我的知识库正在不断更新中，建议您可以尝试更具体的关键词，或者稍后再试。`;
+                    
+                    if (answer === "抱歉，我暂时没有找到相关信息。") {
+                        answer = `关于"${question}"的问题很有趣！目前我可以回答关于人工智能、机器学习、深度学习、爬虫和API等技术话题的问题。`;
+                    }
                 }
                 
                 addMessage('bot', answer);
@@ -209,9 +280,10 @@
             }
         }
 
-        // 页面加载完成后聚焦输入框
+        // 页面加载完成后的初始化
         window.onload = function() {
             document.getElementById('questionInput').focus();
+            checkAPIStatus();
         };
     </script>
 </body>
