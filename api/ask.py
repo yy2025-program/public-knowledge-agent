@@ -1,5 +1,5 @@
-from http.server import BaseHTTPRequestHandler
 import json
+from http.server import BaseHTTPRequestHandler
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -13,13 +13,15 @@ class handler(BaseHTTPRequestHandler):
         
         try:
             # 读取请求数据
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            data = json.loads(post_data.decode('utf-8'))
+            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length > 0:
+                post_data = self.rfile.read(content_length)
+                data = json.loads(post_data.decode('utf-8'))
+                question = data.get('question', '')
+            else:
+                question = ''
             
-            question = data.get('question', '')
-            
-            # 知识库数据
+            # 知识库
             knowledge_base = {
                 "人工智能": "人工智能（AI）是计算机科学的一个分支，致力于创建能够执行通常需要人类智能的任务的系统。它包括机器学习、深度学习、自然语言处理等多个子领域。",
                 "机器学习": "机器学习是人工智能的一个子集，它使计算机能够在没有明确编程的情况下学习和改进。通过算法分析数据，识别模式，并做出预测或决策。",
@@ -28,7 +30,7 @@ class handler(BaseHTTPRequestHandler):
                 "API": "API（应用程序编程接口）是不同软件应用程序之间通信的桥梁。它定义了请求和响应的格式，使开发者能够集成不同的服务和功能。"
             }
             
-            # 查找匹配的答案
+            # 查找答案
             answer = "抱歉，我暂时没有找到相关信息。"
             matched = False
             
@@ -40,7 +42,7 @@ class handler(BaseHTTPRequestHandler):
                     break
             
             # 模糊匹配
-            if not matched:
+            if not matched and question:
                 question_lower = question.lower()
                 if any(word in question_lower for word in ["ai", "智能", "artificial"]):
                     answer = knowledge_base["人工智能"]
@@ -59,7 +61,7 @@ class handler(BaseHTTPRequestHandler):
                     matched = True
             
             # 默认回答
-            if not matched:
+            if not matched and question:
                 if any(word in question for word in ["什么", "如何", "怎么", "为什么", "是什么"]):
                     answer = f"关于'{question}'的问题很有价值！我的知识库目前包含人工智能、机器学习、深度学习、爬虫和API等技术话题。请尝试询问这些领域的具体问题。"
                 else:
@@ -87,3 +89,18 @@ class handler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
+    
+    def do_GET(self):
+        # 处理GET请求（测试用）
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        
+        response = {
+            "message": "AI Knowledge Agent API is running!",
+            "endpoints": ["/api/ask", "/api/crawl"],
+            "status": "ok"
+        }
+        
+        self.wfile.write(json.dumps(response, ensure_ascii=False).encode('utf-8'))
