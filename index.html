@@ -36,17 +36,18 @@
             pointer-events: none;
         }
         
+        /* 聊天容器样式 - 更新版本 */
         .chat-container {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.05) !important;
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
             box-shadow: 
                 0 32px 64px rgba(0, 0, 0, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            width: 85%;
-            max-width: 750px;
-            height: 600px;
+            width: 80% !important;
+            max-width: 700px !important;
+            height: 550px !important;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -84,39 +85,40 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
         }
         
+        /* 全屏按钮样式 - 强制显示 */
         .fullscreen-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: absolute !important;
+            top: 20px !important;
+            right: 20px !important;
+            width: 40px !important;
+            height: 40px !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
             border-radius: 12px;
             cursor: pointer;
-            display: flex;
+            display: flex !important;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
-            z-index: 10;
+            z-index: 100 !important;
             backdrop-filter: blur(10px);
         }
         
         .fullscreen-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.25) !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
             transform: scale(1.05);
         }
         
         .fullscreen-btn svg {
-            width: 18px;
-            height: 18px;
-            fill: rgba(255, 255, 255, 0.8);
+            width: 18px !important;
+            height: 18px !important;
+            fill: rgba(255, 255, 255, 0.9) !important;
             transition: fill 0.3s ease;
         }
         
         .fullscreen-btn:hover svg {
-            fill: rgba(255, 255, 255, 1);
+            fill: rgba(255, 255, 255, 1) !important;
         }
         
         .header {
@@ -996,31 +998,41 @@
             }
         }
 
-        // 全屏功能
+        // 全屏功能 - 调试版本
         let isFullscreen = false;
 
         function toggleFullscreen() {
+            console.log('toggleFullscreen called, current state:', isFullscreen);
             const chatContainer = document.getElementById('chatContainer');
             const fullscreenIcon = document.getElementById('fullscreenIcon');
             
+            if (!chatContainer || !fullscreenIcon) {
+                console.error('Elements not found:', { chatContainer, fullscreenIcon });
+                return;
+            }
+            
             isFullscreen = !isFullscreen;
+            console.log('New fullscreen state:', isFullscreen);
             
             if (isFullscreen) {
                 // 进入全屏
                 chatContainer.classList.add('fullscreen');
                 fullscreenIcon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
                 document.getElementById('fullscreenBtn').title = '退出全屏';
+                console.log('Entered fullscreen mode');
             } else {
                 // 退出全屏
                 chatContainer.classList.remove('fullscreen');
                 fullscreenIcon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
                 document.getElementById('fullscreenBtn').title = '全屏';
+                console.log('Exited fullscreen mode');
             }
         }
 
         // 监听ESC键退出全屏
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && isFullscreen) {
+                console.log('ESC key pressed, exiting fullscreen');
                 toggleFullscreen();
             }
         });
