@@ -397,11 +397,25 @@
             CRAWL_HISTORY: 'crawl_history'
         };
 
-        // 页面加载时初始化
+        // 页面加载时检查管理员权限
         window.onload = function() {
+            checkAdminAuth();
+        };
+
+        function checkAdminAuth() {
+            const isAuthenticated = sessionStorage.getItem('admin_authenticated');
+            
+            if (isAuthenticated !== 'true') {
+                // 未验证，重定向到主页
+                alert('请先通过主页进行管理员验证');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // 已验证，继续加载页面
             loadSavedApiKey();
             loadHistory();
-        };
+        }
 
         function loadSavedApiKey() {
             const savedKey = localStorage.getItem(STORAGE_KEYS.API_KEY);

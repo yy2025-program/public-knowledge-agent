@@ -83,24 +83,55 @@
             animation: shimmer 3s infinite;
         }
         
+        .title-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .ai-avatar {
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        .ai-avatar svg {
+            filter: drop-shadow(0 4px 12px rgba(96, 165, 250, 0.4));
+        }
+        
+        .title-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+        
+        .title-text h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+        
+        .title-text .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 400;
+            margin-top: 4px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+        
         @keyframes shimmer {
             0% { left: -100%; }
             100% { left: 100%; }
-        }
-        
-        .header h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            letter-spacing: -0.02em;
-        }
-        
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            font-weight: 400;
-            margin-bottom: 20px;
         }
         
         .header .nav-links {
@@ -119,6 +150,7 @@
             font-weight: 500;
             transition: all 0.3s ease;
             display: inline-block;
+            cursor: pointer;
         }
         
         .header .nav-links a:hover {
@@ -353,11 +385,52 @@
 <body>
     <div class="chat-container">
         <div class="header">
-            <h1>🤖 AI Knowledge Agent</h1>
-            <p>智能物流知识助手</p>
+            <div class="title-section">
+                <div class="ai-avatar">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#60a5fa"/>
+                                <stop offset="50%" style="stop-color:#a78bfa"/>
+                                <stop offset="100%" style="stop-color:#f472b6"/>
+                            </linearGradient>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge> 
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- AI Brain Core -->
+                        <circle cx="24" cy="24" r="20" fill="url(#aiGradient)" opacity="0.2" filter="url(#glow)"/>
+                        <circle cx="24" cy="24" r="16" fill="none" stroke="url(#aiGradient)" stroke-width="2" opacity="0.6"/>
+                        
+                        <!-- Neural Network Nodes -->
+                        <circle cx="24" cy="12" r="2" fill="url(#aiGradient)"/>
+                        <circle cx="36" cy="20" r="2" fill="url(#aiGradient)"/>
+                        <circle cx="36" cy="28" r="2" fill="url(#aiGradient)"/>
+                        <circle cx="24" cy="36" r="2" fill="url(#aiGradient)"/>
+                        <circle cx="12" cy="28" r="2" fill="url(#aiGradient)"/>
+                        <circle cx="12" cy="20" r="2" fill="url(#aiGradient)"/>
+                        
+                        <!-- Neural Connections -->
+                        <path d="M24 12 L36 20 L36 28 L24 36 L12 28 L12 20 Z" fill="none" stroke="url(#aiGradient)" stroke-width="1" opacity="0.4"/>
+                        <path d="M24 12 L24 36 M12 20 L36 28 M12 28 L36 20" stroke="url(#aiGradient)" stroke-width="1" opacity="0.3"/>
+                        
+                        <!-- Central Processing Unit -->
+                        <circle cx="24" cy="24" r="4" fill="url(#aiGradient)" opacity="0.8"/>
+                        <circle cx="24" cy="24" r="2" fill="white" opacity="0.9"/>
+                    </svg>
+                </div>
+                <div class="title-text">
+                    <h1>AI Knowledge Agent</h1>
+                    <span class="subtitle">智能物流知识助手</span>
+                </div>
+            </div>
             <div class="nav-links">
-                <a href="admin.html" target="_blank">⚙️ 管理面板</a>
-                <a href="firecrawl-manager.html" target="_blank">🔥 爬取管理</a>
+                <a href="#" onclick="checkAdminAccess('admin.html')" target="_blank">⚙️ 管理面板</a>
+                <a href="#" onclick="checkAdminAccess('firecrawl-manager.html')" target="_blank">🔥 爬取管理</a>
             </div>
         </div>
         
@@ -866,6 +939,144 @@
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 askQuestion();
+            }
+        }
+
+        // 管理员密码验证
+        function checkAdminAccess(targetPage) {
+            // 检查是否已经验证过（会话存储）
+            const isAuthenticated = sessionStorage.getItem('admin_authenticated');
+            
+            if (isAuthenticated === 'true') {
+                window.open(targetPage, '_blank');
+                return;
+            }
+            
+            // 创建密码输入模态框
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0, 0, 0, 0.8); z-index: 10000; display: flex; 
+                align-items: center; justify-content: center; padding: 20px;
+                backdrop-filter: blur(10px);
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: rgba(15, 23, 42, 0.95); 
+                    backdrop-filter: blur(20px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 20px; 
+                    padding: 40px; 
+                    max-width: 400px; 
+                    width: 100%;
+                    text-align: center;
+                    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+                ">
+                    <div style="
+                        width: 60px; 
+                        height: 60px; 
+                        background: linear-gradient(135deg, #ef4444, #dc2626);
+                        border-radius: 50%; 
+                        margin: 0 auto 20px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+                    ">
+                        <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
+                        </svg>
+                    </div>
+                    <h3 style="color: #e2e8f0; margin-bottom: 8px; font-size: 1.4rem; font-weight: 600;">管理员验证</h3>
+                    <p style="color: rgba(226, 232, 240, 0.7); margin-bottom: 24px; font-size: 14px;">请输入管理员密码以访问管理功能</p>
+                    <input type="password" id="adminPassword" placeholder="输入管理员密码" style="
+                        width: 100%; 
+                        padding: 12px 16px; 
+                        background: rgba(255, 255, 255, 0.08);
+                        border: 1px solid rgba(255, 255, 255, 0.15);
+                        border-radius: 8px; 
+                        color: #e2e8f0;
+                        font-size: 14px;
+                        margin-bottom: 20px;
+                        outline: none;
+                    ">
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button onclick="verifyPassword('${targetPage}', this.parentElement.parentElement.parentElement)" style="
+                            padding: 10px 20px;
+                            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 500;
+                            transition: all 0.3s ease;
+                        ">确认</button>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+                            padding: 10px 20px;
+                            background: rgba(255, 255, 255, 0.1);
+                            color: #e2e8f0;
+                            border: 1px solid rgba(255, 255, 255, 0.2);
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 500;
+                            transition: all 0.3s ease;
+                        ">取消</button>
+                    </div>
+                    <div id="errorMessage" style="
+                        color: #ef4444; 
+                        font-size: 12px; 
+                        margin-top: 12px; 
+                        display: none;
+                    "></div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 聚焦到密码输入框
+            setTimeout(() => {
+                document.getElementById('adminPassword').focus();
+            }, 100);
+            
+            // 支持回车键确认
+            document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyPassword(targetPage, modal);
+                }
+            });
+            
+            // 点击背景关闭
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function verifyPassword(targetPage, modal) {
+            const password = document.getElementById('adminPassword').value;
+            const errorDiv = document.getElementById('errorMessage');
+            
+            // 管理员密码（您可以修改这个密码）
+            const ADMIN_PASSWORD = 'admin2024';
+            
+            if (password === ADMIN_PASSWORD) {
+                // 验证成功，保存到会话存储
+                sessionStorage.setItem('admin_authenticated', 'true');
+                modal.remove();
+                window.open(targetPage, '_blank');
+            } else {
+                // 验证失败
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = '密码错误，请重试';
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPassword').focus();
+                
+                // 3秒后隐藏错误信息
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 3000);
             }
         }
 
