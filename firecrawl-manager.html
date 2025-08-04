@@ -637,7 +637,7 @@
             
             let historyHTML = `<div class="status success">共有 ${history.length} 条爬取记录</div>`;
             
-            history.slice(0, 10).forEach(item => {
+            history.slice(0, 10).forEach((item, index) => {
                 const preview = item.content.length > 200 ? item.content.substring(0, 200) + '...' : item.content;
                 historyHTML += `
                     <div class="crawled-item">
@@ -646,6 +646,10 @@
                             ${item.url} | ${new Date(item.timestamp).toLocaleString()}
                         </div>
                         <div class="content">${preview}</div>
+                        <div style="margin-top: 10px;">
+                            <button class="btn btn-secondary" onclick="previewContent(${index})" style="font-size: 12px; padding: 5px 10px;">查看完整内容</button>
+                            <button class="btn btn-secondary" onclick="testWithContent('${item.title}')" style="font-size: 12px; padding: 5px 10px;">测试搜索</button>
+                        </div>
                     </div>
                 `;
             });
@@ -655,6 +659,57 @@
             }
             
             historyDiv.innerHTML = historyHTML;
+        }
+
+        function previewContent(index) {
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEYS.CRAWL_HISTORY) || '[]');
+            const item = history[index];
+            
+            if (!item) return;
+            
+            // 创建模态窗口显示完整内容
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.8); z-index: 1000; display: flex; 
+                align-items: center; justify-content: center; padding: 20px;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 15px; padding: 30px; max-width: 800px; max-height: 80vh; overflow-y: auto;">
+                    <h2 style="color: #4f46e5; margin-bottom: 15px;">${item.title}</h2>
+                    <div style="color: #6b7280; margin-bottom: 20px; font-size: 14px;">
+                        <strong>URL:</strong> ${item.url}<br>
+                        <strong>爬取时间:</strong> ${new Date(item.timestamp).toLocaleString()}<br>
+                        <strong>格式:</strong> ${item.format}<br>
+                        <strong>内容长度:</strong> ${item.content.length} 字符
+                    </div>
+                    <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background: #f8fafc; white-space: pre-wrap; line-height: 1.6;">
+                        ${item.content}
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                                style="background: #4f46e5; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
+                            关闭
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 点击背景关闭
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+
+        function testWithContent(title) {
+            // 自动填入测试问题
+            document.getElementById('testQuery').value = `什么是${title}`;
+            testKnowledgeSearch();
         }
 
         function clearHistory() {

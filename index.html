@@ -262,6 +262,15 @@
                 if (useRealAPI) {
                     // 使用增强的本地智能问答
                     await new Promise(resolve => setTimeout(resolve, 800)); // 模拟思考时间
+                    
+                    // 添加调试信息
+                    const knowledgeBase = JSON.parse(localStorage.getItem('crawled_knowledge_base') || '[]');
+                    if (knowledgeBase.length > 0) {
+                        console.log(`知识库包含 ${knowledgeBase.length} 条爬取内容`);
+                        addMessage('bot', `🔍 正在搜索知识库... (包含 ${knowledgeBase.length} 条爬取内容)`);
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
                     answer = generateSmartAnswer(question);
                 } else {
                     // 离线模式
@@ -348,26 +357,88 @@
                 const knowledgeBase = JSON.parse(localStorage.getItem('crawled_knowledge_base') || '[]');
                 const questionLower = question.toLowerCase();
                 
-                // 搜索爬取的内容
-                const results = knowledgeBase.filter(item => {
-                    const titleMatch = item.title.toLowerCase().includes(questionLower);
-                    const contentMatch = item.content.toLowerCase().includes(questionLower);
-                    return titleMatch || contentMatch;
-                }).slice(0, 3); // 最多返回3个结果
+                // 提取关键词
+                const keywords = extractKeywords(questionLower);
+                console.log('搜索关键词:', keywords);
+                console.log('知识库条目数:', knowledgeBase.length);
                 
+                // 搜索爬取的内容
+                const results = knowledgeBase.map(item => {
+                    let score = 0;
+                    const titleLower = item.title.toLowerCase();
+                    const contentLower = item.content.toLowerCase();
+                    
+                    // 标题完全匹配
+                    if (titleLower.includes(questionLower)) {
+                        score += 20;
+                    }
+                    
+                    // 内容完全匹配
+                    if (contentLower.includes(questionLower)) {
+                        score += 15;
+                    }
+                    
+                    // 关键词匹配
+                    keywords.forEach(keyword => {
+                        if (keyword.length >= 2) { // 忽略过短的词
+                            if (titleLower.includes(keyword)) {
+                                score += 10;
+                            }
+                            if (contentLower.includes(keyword)) {
+                                score += 5;
+                            }
+                        }
+                    });
+                    
+                    // 特殊处理：亚马逊相关词汇
+                    const amazonKeywords = ['amazon', '亚马逊', 'fba', '仓储', '物流', '配送', '分拨', 'fulfillment'];
+                    amazonKeywords.forEach(keyword => {
+                        if (questionLower.includes(keyword) && (titleLower.includes(keyword) || contentLower.includes(keyword))) {
+                            score += 8;
+                        }
+                    });
+                    
+                    return { ...item, score };
+                }).filter(item => item.score > 0)
+                  .sort((a, b) => b.score - a.score)
+                  .slice(0, 3);
+                
+                console.log('搜索结果:', results.map(r => ({ title: r.title, score: r.score })));
                 return results;
+                
             } catch (error) {
                 console.error('搜索爬取知识库时出错:', error);
                 return [];
             }
         }
 
+        function extractKeywords(text) {
+            // 移除标点符号和停用词
+            const stopWords = ['是', '什么', '的', '了', '在', '有', '和', '与', '或', '但', '如何', '怎么', '为什么', '哪里', '什么时候', '谁'];
+            
+            // 分词（简单的中文分词）
+            const words = text.replace(/[？！。，、；：""''（）【】《》]/g, ' ')
+                             .split(/\s+/)
+                             .filter(word => word.length > 0 && !stopWords.includes(word));
+            
+            // 添加一些组合词
+            const combinations = [];
+            for (let i = 0; i < words.length - 1; i++) {
+                combinations.push(words[i] + words[i + 1]);
+            }
+            
+            return [...words, ...combinations];
+        }
+
         function generateAnswerFromCrawledData(question, results) {
             let answer = `基于爬取的网页内容，关于"${question}"的信息：\n\n`;
             
             results.forEach((item, index) => {
-                const preview = item.content.length > 300 ? item.content.substring(0, 300) + '...' : item.content;
-                answer += `📄 **${item.title}**\n`;
+                // 智能提取相关段落
+                const relevantContent = extractRelevantContent(item.content, question);
+                const preview = relevantContent.length > 400 ? relevantContent.substring(0, 400) + '...' : relevantContent;
+                
+                answer += `📄 **${item.title}** (匹配度: ${item.score})\n`;
                 answer += `${preview}\n`;
                 answer += `🔗 来源：${item.url}\n\n`;
             });
@@ -375,6 +446,43 @@
             answer += `💡 以上内容来自FireCrawl爬取的网页。如需更多信息，可以访问 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 爬取更多相关网页！`;
             
             return answer;
+        }
+
+        function extractRelevantContent(content, question) {
+            const questionLower = question.toLowerCase();
+            const keywords = extractKeywords(questionLower);
+            
+            // 将内容分成段落
+            const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 20);
+            
+            // 为每个段落评分
+            const scoredParagraphs = paragraphs.map(paragraph => {
+                let score = 0;
+                const paragraphLower = paragraph.toLowerCase();
+                
+                // 关键词匹配评分
+                keywords.forEach(keyword => {
+                    if (keyword.length >= 2 && paragraphLower.includes(keyword)) {
+                        score += keyword.length; // 长关键词权重更高
+                    }
+                });
+                
+                return { paragraph, score };
+            });
+            
+            // 选择得分最高的段落
+            const bestParagraphs = scoredParagraphs
+                .filter(p => p.score > 0)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 2) // 最多选择2个段落
+                .map(p => p.paragraph);
+            
+            if (bestParagraphs.length > 0) {
+                return bestParagraphs.join('\n\n');
+            }
+            
+            // 如果没有找到相关段落，返回开头部分
+            return content.substring(0, 500);
         }
 
         function generateBasicAnswer(question) {
