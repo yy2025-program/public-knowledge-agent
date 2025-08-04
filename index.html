@@ -305,29 +305,39 @@
             
             // 首先搜索FireCrawl爬取的知识库
             const crawledResults = searchCrawledKnowledge(question);
+            console.log('FireCrawl搜索结果数量:', crawledResults.length);
+            
             if (crawledResults.length > 0) {
+                console.log('使用FireCrawl爬取内容回答');
                 return generateAnswerFromCrawledData(question, crawledResults);
             }
             
-            // 然后搜索内置知识库
+            console.log('未找到FireCrawl内容，使用内置知识库');
+            
+            // 然后搜索内置知识库 - 但要避免错误匹配
             let bestMatch = null;
             let maxScore = 0;
 
             for (const [topic, data] of Object.entries(enhancedKnowledge)) {
                 let score = 0;
                 
+                // 只有当问题明确包含主题词时才匹配
                 if (question.includes(topic)) {
-                    score += 10;
+                    score += 15;
                 }
                 
+                // 严格的关键词匹配
+                let keywordMatches = 0;
                 for (const keyword of data.keywords) {
                     if (questionLower.includes(keyword.toLowerCase())) {
-                        score += 5;
+                        keywordMatches++;
+                        score += 8;
                     }
                 }
                 
-                if (questionLower.includes(topic.toLowerCase())) {
-                    score += 8;
+                // 需要至少2个关键词匹配才考虑
+                if (keywordMatches < 2 && !question.includes(topic)) {
+                    score = 0;
                 }
                 
                 if (score > maxScore) {
@@ -336,20 +346,41 @@
                 }
             }
 
-            if (bestMatch && bestMatch.score >= 5) {
+            if (bestMatch && bestMatch.score >= 15) {
                 return `关于${bestMatch.topic}：\n\n${bestMatch.data.content}\n\n💡 如果您想了解更多相关信息，可以询问其他技术话题！`;
+            }
+
+            // 如果没有找到匹配的内容，提供帮助信息
+            return generateHelpfulResponse(question);
+        }
+
+        function generateHelpfulResponse(question) {
+            const questionLower = question.toLowerCase();
+            
+            // 检查是否是关于已爬取内容的问题
+            const knowledgeBase = JSON.parse(localStorage.getItem('crawled_knowledge_base') || '[]');
+            if (knowledgeBase.length > 0) {
+                const domains = [...new Set(knowledgeBase.map(item => {
+                    try {
+                        return new URL(item.url).hostname;
+                    } catch {
+                        return item.url;
+                    }
+                }))];
+                
+                return `抱歉，我没有找到关于"${question}"的确切信息。\n\n🔍 **搜索建议：**\n• 尝试使用更简单的关键词\n• 检查拼写是否正确\n\n📚 **当前知识库包含：**\n${knowledgeBase.length} 条爬取内容，来源包括：\n${domains.map(d => `• ${d}`).join('\n')}\n\n💡 **提示：**\n• 访问 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 查看爬取内容\n• 尝试爬取更多相关网页来扩展知识库\n• 使用管理器中的"知识库搜索测试"功能调试`;
             }
 
             // 智能推荐
             if (questionLower.includes('如何') || questionLower.includes('怎么')) {
-                return `关于"${question}"的实现方法，我建议您可以：\n\n1. 先了解相关的基础概念（如人工智能、机器学习等）\n2. 查看相关的技术文档和教程\n3. 实践动手项目来加深理解\n\n您可以问我关于人工智能、机器学习、深度学习、爬虫、API、FireCrawl、Supabase等技术话题的具体问题！\n\n💡 提示：您也可以使用 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 爬取更多网页内容来扩展知识库！`;
+                return `关于"${question}"的实现方法，我建议您可以：\n\n1. 先了解相关的基础概念\n2. 查看相关的技术文档和教程\n3. 实践动手项目来加深理解\n\n🔥 您还可以通过 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 爬取特定网页来获取更专业的答案！`;
             }
 
             if (questionLower.includes('什么') || questionLower.includes('是什么')) {
-                return `"${question}"是一个很好的问题！我的知识库包含以下技术领域的详细信息：\n\n🤖 人工智能与机器学习\n🕷️ 网络爬虫技术\n🔗 API开发与集成\n🗄️ 数据库与云服务\n\n请尝试询问这些领域的具体问题，比如"什么是机器学习"或"如何使用API"等。\n\n🔥 您还可以通过 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 爬取特定网页来获取更专业的答案！`;
+                return `"${question}"是一个很好的问题！\n\n🤖 我的内置知识库包含：人工智能、机器学习、深度学习、爬虫、API、FireCrawl、Supabase等技术话题。\n\n🔥 **想要获取更专业的答案？**\n使用 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 爬取相关网页：\n• 官方文档\n• 技术博客\n• 教程网站\n• 专业论坛`;
             }
 
-            return `感谢您的问题"${question}"！虽然我没有找到完全匹配的答案，但我可以为您介绍相关的技术概念。\n\n我的专业领域包括：\n• 人工智能与机器学习\n• 网络爬虫与数据采集\n• API开发与系统集成\n• 数据库与云服务\n\n请尝试询问这些领域的具体问题！\n\n🚀 想要获取更多专业内容？使用 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 爬取相关网页来扩展知识库！`;
+            return `感谢您的问题"${question}"！\n\n🔍 **搜索建议：**\n• 尝试使用不同的关键词\n• 简化问题表达\n• 检查拼写是否正确\n\n🚀 **扩展知识库：**\n访问 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 爬取相关网页来获取专业答案！`;
         }
 
         function searchCrawledKnowledge(question) {
@@ -357,53 +388,87 @@
                 const knowledgeBase = JSON.parse(localStorage.getItem('crawled_knowledge_base') || '[]');
                 const questionLower = question.toLowerCase();
                 
-                // 提取关键词
-                const keywords = extractKeywords(questionLower);
-                console.log('搜索关键词:', keywords);
+                console.log('=== 搜索调试信息 ===');
+                console.log('问题:', question);
                 console.log('知识库条目数:', knowledgeBase.length);
                 
+                if (knowledgeBase.length === 0) {
+                    console.log('知识库为空');
+                    return [];
+                }
+                
+                // 提取关键词
+                const keywords = extractKeywords(questionLower);
+                console.log('提取的关键词:', keywords);
+                
                 // 搜索爬取的内容
-                const results = knowledgeBase.map(item => {
+                const results = knowledgeBase.map((item, index) => {
                     let score = 0;
                     const titleLower = item.title.toLowerCase();
                     const contentLower = item.content.toLowerCase();
                     
-                    // 标题完全匹配
-                    if (titleLower.includes(questionLower)) {
-                        score += 20;
-                    }
+                    console.log(`\n--- 检查条目 ${index + 1} ---`);
+                    console.log('标题:', item.title);
+                    console.log('URL:', item.url);
+                    console.log('内容长度:', item.content.length);
                     
-                    // 内容完全匹配
+                    // 问题完全匹配
+                    if (titleLower.includes(questionLower)) {
+                        score += 25;
+                        console.log('标题完全匹配 +25');
+                    }
                     if (contentLower.includes(questionLower)) {
-                        score += 15;
+                        score += 20;
+                        console.log('内容完全匹配 +20');
                     }
                     
                     // 关键词匹配
                     keywords.forEach(keyword => {
-                        if (keyword.length >= 2) { // 忽略过短的词
+                        if (keyword.length >= 2) {
                             if (titleLower.includes(keyword)) {
-                                score += 10;
+                                score += 12;
+                                console.log(`标题包含关键词"${keyword}" +12`);
                             }
                             if (contentLower.includes(keyword)) {
-                                score += 5;
+                                score += 8;
+                                console.log(`内容包含关键词"${keyword}" +8`);
                             }
                         }
                     });
                     
                     // 特殊处理：亚马逊相关词汇
-                    const amazonKeywords = ['amazon', '亚马逊', 'fba', '仓储', '物流', '配送', '分拨', 'fulfillment'];
+                    const amazonKeywords = [
+                        'amazon', '亚马逊', 'fba', '仓储', '物流', '配送', '分拨', 'fulfillment',
+                        '运营中心', '库存', '补货', '批量', '解决方案', 'prime', '商城'
+                    ];
+                    
                     amazonKeywords.forEach(keyword => {
-                        if (questionLower.includes(keyword) && (titleLower.includes(keyword) || contentLower.includes(keyword))) {
-                            score += 8;
+                        if (questionLower.includes(keyword)) {
+                            if (titleLower.includes(keyword) || contentLower.includes(keyword)) {
+                                score += 15;
+                                console.log(`亚马逊关键词"${keyword}"匹配 +15`);
+                            }
                         }
                     });
                     
+                    // 如果是亚马逊卖家中心的内容，额外加分
+                    if (item.url && item.url.includes('sellercentral.amazon.com')) {
+                        score += 10;
+                        console.log('亚马逊卖家中心内容 +10');
+                    }
+                    
+                    console.log(`总分: ${score}`);
                     return { ...item, score };
                 }).filter(item => item.score > 0)
                   .sort((a, b) => b.score - a.score)
                   .slice(0, 3);
                 
-                console.log('搜索结果:', results.map(r => ({ title: r.title, score: r.score })));
+                console.log('\n=== 最终搜索结果 ===');
+                console.log('匹配结果数量:', results.length);
+                results.forEach((r, i) => {
+                    console.log(`结果${i + 1}: ${r.title} (分数: ${r.score})`);
+                });
+                
                 return results;
                 
             } catch (error) {
@@ -414,7 +479,7 @@
 
         function extractKeywords(text) {
             // 移除标点符号和停用词
-            const stopWords = ['是', '什么', '的', '了', '在', '有', '和', '与', '或', '但', '如何', '怎么', '为什么', '哪里', '什么时候', '谁'];
+            const stopWords = ['是', '什么', '的', '了', '在', '有', '和', '与', '或', '但', '如何', '怎么', '为什么', '哪里', '什么时候', '谁', '吗', '呢'];
             
             // 分词（简单的中文分词）
             const words = text.replace(/[？！。，、；：""''（）【】《》]/g, ' ')
@@ -424,8 +489,18 @@
             // 添加一些组合词
             const combinations = [];
             for (let i = 0; i < words.length - 1; i++) {
-                combinations.push(words[i] + words[i + 1]);
+                if (words[i].length >= 2 && words[i + 1].length >= 2) {
+                    combinations.push(words[i] + words[i + 1]);
+                }
             }
+            
+            // 特殊处理：保留重要的短语
+            const importantPhrases = ['仓储服务', '分拨服务', '仓储和分拨', '运营中心', '自动补货'];
+            importantPhrases.forEach(phrase => {
+                if (text.includes(phrase)) {
+                    combinations.push(phrase);
+                }
+            });
             
             return [...words, ...combinations];
         }
