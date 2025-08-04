@@ -139,6 +139,10 @@
         <div class="header">
             <h1>🤖 AI Knowledge Agent</h1>
             <p>基于网页爬取的智能问答助手</p>
+            <div style="margin-top: 15px;">
+                <a href="admin.html" target="_blank" style="color: white; text-decoration: none; margin: 0 10px; padding: 5px 10px; background: rgba(255,255,255,0.2); border-radius: 15px; font-size: 12px;">⚙️ 管理面板</a>
+                <a href="firecrawl-manager.html" target="_blank" style="color: white; text-decoration: none; margin: 0 10px; padding: 5px 10px; background: rgba(255,255,255,0.2); border-radius: 15px; font-size: 12px;">🔥 FireCrawl管理</a>
+            </div>
         </div>
         
         <div id="apiStatus" class="api-status">
@@ -147,7 +151,14 @@
         
         <div id="chatBox" class="chat-box">
             <div class="message bot-message">
-                👋 你好！我是AI知识助手，可以回答基于爬取网页内容的专业问题。请问有什么可以帮助您的吗？
+                👋 你好！我是AI知识助手，可以回答基于爬取网页内容的专业问题。
+                
+                <br><br>🔥 <strong>新功能</strong>：现在支持FireCrawl网页爬取！
+                <br>• 访问 <a href="firecrawl-manager.html" target="_blank" style="color: #4f46e5;">FireCrawl管理器</a> 爬取专业网页内容
+                <br>• 爬取的内容会自动加入知识库，让我的回答更准确
+                <br>• 支持单页爬取和批量爬取
+                
+                <br><br>请问有什么可以帮助您的吗？
             </div>
         </div>
         
@@ -282,26 +293,30 @@
 
         function generateSmartAnswer(question) {
             const questionLower = question.toLowerCase();
+            
+            // 首先搜索FireCrawl爬取的知识库
+            const crawledResults = searchCrawledKnowledge(question);
+            if (crawledResults.length > 0) {
+                return generateAnswerFromCrawledData(question, crawledResults);
+            }
+            
+            // 然后搜索内置知识库
             let bestMatch = null;
             let maxScore = 0;
 
-            // 智能匹配算法
             for (const [topic, data] of Object.entries(enhancedKnowledge)) {
                 let score = 0;
                 
-                // 精确匹配
                 if (question.includes(topic)) {
                     score += 10;
                 }
                 
-                // 关键词匹配
                 for (const keyword of data.keywords) {
                     if (questionLower.includes(keyword.toLowerCase())) {
                         score += 5;
                     }
                 }
                 
-                // 模糊匹配
                 if (questionLower.includes(topic.toLowerCase())) {
                     score += 8;
                 }
@@ -318,14 +333,48 @@
 
             // 智能推荐
             if (questionLower.includes('如何') || questionLower.includes('怎么')) {
-                return `关于"${question}"的实现方法，我建议您可以：\n\n1. 先了解相关的基础概念（如人工智能、机器学习等）\n2. 查看相关的技术文档和教程\n3. 实践动手项目来加深理解\n\n您可以问我关于人工智能、机器学习、深度学习、爬虫、API、FireCrawl、Supabase等技术话题的具体问题！`;
+                return `关于"${question}"的实现方法，我建议您可以：\n\n1. 先了解相关的基础概念（如人工智能、机器学习等）\n2. 查看相关的技术文档和教程\n3. 实践动手项目来加深理解\n\n您可以问我关于人工智能、机器学习、深度学习、爬虫、API、FireCrawl、Supabase等技术话题的具体问题！\n\n💡 提示：您也可以使用 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 爬取更多网页内容来扩展知识库！`;
             }
 
             if (questionLower.includes('什么') || questionLower.includes('是什么')) {
-                return `"${question}"是一个很好的问题！我的知识库包含以下技术领域的详细信息：\n\n🤖 人工智能与机器学习\n🕷️ 网络爬虫技术\n🔗 API开发与集成\n🗄️ 数据库与云服务\n\n请尝试询问这些领域的具体问题，比如"什么是机器学习"或"如何使用API"等。`;
+                return `"${question}"是一个很好的问题！我的知识库包含以下技术领域的详细信息：\n\n🤖 人工智能与机器学习\n🕷️ 网络爬虫技术\n🔗 API开发与集成\n🗄️ 数据库与云服务\n\n请尝试询问这些领域的具体问题，比如"什么是机器学习"或"如何使用API"等。\n\n🔥 您还可以通过 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 爬取特定网页来获取更专业的答案！`;
             }
 
-            return `感谢您的问题"${question}"！虽然我没有找到完全匹配的答案，但我可以为您介绍相关的技术概念。\n\n我的专业领域包括：\n• 人工智能与机器学习\n• 网络爬虫与数据采集\n• API开发与系统集成\n• 数据库与云服务\n\n请尝试询问这些领域的具体问题！`;
+            return `感谢您的问题"${question}"！虽然我没有找到完全匹配的答案，但我可以为您介绍相关的技术概念。\n\n我的专业领域包括：\n• 人工智能与机器学习\n• 网络爬虫与数据采集\n• API开发与系统集成\n• 数据库与云服务\n\n请尝试询问这些领域的具体问题！\n\n🚀 想要获取更多专业内容？使用 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 爬取相关网页来扩展知识库！`;
+        }
+
+        function searchCrawledKnowledge(question) {
+            try {
+                const knowledgeBase = JSON.parse(localStorage.getItem('crawled_knowledge_base') || '[]');
+                const questionLower = question.toLowerCase();
+                
+                // 搜索爬取的内容
+                const results = knowledgeBase.filter(item => {
+                    const titleMatch = item.title.toLowerCase().includes(questionLower);
+                    const contentMatch = item.content.toLowerCase().includes(questionLower);
+                    return titleMatch || contentMatch;
+                }).slice(0, 3); // 最多返回3个结果
+                
+                return results;
+            } catch (error) {
+                console.error('搜索爬取知识库时出错:', error);
+                return [];
+            }
+        }
+
+        function generateAnswerFromCrawledData(question, results) {
+            let answer = `基于爬取的网页内容，关于"${question}"的信息：\n\n`;
+            
+            results.forEach((item, index) => {
+                const preview = item.content.length > 300 ? item.content.substring(0, 300) + '...' : item.content;
+                answer += `📄 **${item.title}**\n`;
+                answer += `${preview}\n`;
+                answer += `🔗 来源：${item.url}\n\n`;
+            });
+            
+            answer += `💡 以上内容来自FireCrawl爬取的网页。如需更多信息，可以访问 <a href="firecrawl-manager.html" target="_blank">FireCrawl管理器</a> 爬取更多相关网页！`;
+            
+            return answer;
         }
 
         function generateBasicAnswer(question) {
