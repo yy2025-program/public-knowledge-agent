@@ -104,27 +104,41 @@
         
         .nav-links {
             margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
         }
         
         .nav-links a {
             color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
-            margin: 0 12px;
-            padding: 8px 16px;
+            padding: 8px 12px;
             background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            font-size: 13px;
+            border-radius: 16px;
+            font-size: 12px;
             font-weight: 500;
             transition: all 0.3s ease;
             display: inline-block;
             cursor: pointer;
+            white-space: nowrap;
         }
         
         .nav-links a:hover {
             background: rgba(255, 255, 255, 0.25);
             border-color: rgba(255, 255, 255, 0.4);
             transform: translateY(-1px);
+        }
+        
+        .nav-links a.debug {
+            background: rgba(239, 68, 68, 0.8);
+            border-color: rgba(239, 68, 68, 0.6);
+        }
+        
+        .nav-links a.debug:hover {
+            background: rgba(239, 68, 68, 0.9);
+            border-color: rgba(239, 68, 68, 0.8);
         }
         
         .chat-box {
@@ -210,7 +224,7 @@
                 <a href="#" onclick="checkAdminAccess('admin-dashboard.html'); return false;">🛠️ 系统管理</a>
                 <a href="#" onclick="checkAdminAccess('admin.html'); return false;">⚙️ 管理面板</a>
                 <a href="#" onclick="checkAdminAccess('firecrawl-manager.html'); return false;">🔥 爬取管理</a>
-                <a href="#" onclick="showDebugInfo(); return false;" style="background: rgba(239, 68, 68, 0.8);">🔧 调试信息</a>
+                <a href="#" onclick="showDebugInfo(); return false;" class="debug">🔧 调试信息</a>
             </div>
         </div>
         

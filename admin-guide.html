@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理功能说明 - AI Knowledge Agent</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5rem;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            background: rgba(79, 70, 229, 0.1);
+            border: 1px solid rgba(79, 70, 229, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.2);
+        }
+        
+        .feature-card h3 {
+            color: #10b981;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feature-card .icon {
+            font-size: 1.5rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li::before {
+            content: "✅";
+            margin-right: 8px;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .comparison-table th {
+            background: rgba(79, 70, 229, 0.2);
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .comparison-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .back-link a {
+            color: #60a5fa;
+            text-decoration: none;
+            padding: 12px 24px;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .back-link a:hover {
+            background: rgba(96, 165, 250, 0.1);
+            border-color: rgba(96, 165, 250, 0.5);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛠️ 管理功能说明</h1>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3><span class="icon">🤖</span>AI配置</h3>
+                <p><strong>用途：</strong>配置AI服务和模型选择</p>
+                <ul class="feature-list">
+                    <li>设置GitHub Personal Access Token</li>
+                    <li>选择AI模型（GPT-4o、Claude等）</li>
+                    <li>测试AI连接状态</li>
+                    <li>查看Token设置指南</li>
+                </ul>
+                <p><strong>访问：</strong>无需密码，直接访问</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3><span class="icon">🛠️</span>系统管理</h3>
+                <p><strong>用途：</strong>现代化的系统监控和管理面板</p>
+                <ul class="feature-list">
+                    <li>实时系统状态监控</li>
+                    <li>知识库数据管理</li>
+                    <li>存储空间使用情况</li>
+                    <li>爬虫任务管理</li>
+                    <li>AI服务状态检测</li>
+                    <li>系统日志查看</li>
+                    <li>数据导出和优化</li>
+                </ul>
+                <p><strong>访问：</strong>需要管理员密码</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3><span class="icon">⚙️</span>管理面板</h3>
+                <p><strong>用途：</strong>原有的基础管理功能</p>
+                <ul class="feature-list">
+                    <li>基本系统设置</li>
+                    <li>用户权限管理</li>
+                    <li>简单的数据查看</li>
+                    <li>基础配置选项</li>
+                </ul>
+                <p><strong>访问：</strong>需要管理员密码</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3><span class="icon">🔥</span>爬取管理</h3>
+                <p><strong>用途：</strong>专门的网页爬取管理工具</p>
+                <ul class="feature-list">
+                    <li>FireCrawl爬虫配置</li>
+                    <li>批量URL爬取</li>
+                    <li>爬取任务调度</li>
+                    <li>内容质量过滤</li>
+                    <li>爬取历史记录</li>
+                </ul>
+                <p><strong>访问：</strong>需要管理员密码</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3><span class="icon">🔧</span>调试信息</h3>
+                <p><strong>用途：</strong>系统故障排除和调试</p>
+                <ul class="feature-list">
+                    <li>页面元素状态检查</li>
+                    <li>JavaScript函数状态</li>
+                    <li>变量和存储状态</li>
+                    <li>快速功能测试</li>
+                    <li>错误诊断信息</li>
+                </ul>
+                <p><strong>访问：</strong>无需密码，开发调试用</p>
+            </div>
+        </div>
+        
+        <h2 style="color: #10b981; margin: 40px 0 20px 0;">📊 功能对比表</h2>
+        
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>功能</th>
+                    <th>🤖 AI配置</th>
+                    <th>🛠️ 系统管理</th>
+                    <th>⚙️ 管理面板</th>
+                    <th>🔥 爬取管理</th>
+                    <th>🔧 调试信息</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>访问权限</strong></td>
+                    <td>公开</td>
+                    <td>需要密码</td>
+                    <td>需要密码</td>
+                    <td>需要密码</td>
+                    <td>公开</td>
+                </tr>
+                <tr>
+                    <td><strong>主要用途</strong></td>
+                    <td>AI服务配置</td>
+                    <td>系统监控管理</td>
+                    <td>基础管理</td>
+                    <td>爬虫管理</td>
+                    <td>故障排除</td>
+                </tr>
+                <tr>
+                    <td><strong>技术水平</strong></td>
+                    <td>用户友好</td>
+                    <td>管理员级别</td>
+                    <td>管理员级别</td>
+                    <td>技术用户</td>
+                    <td>开发者</td>
+                </tr>
+                <tr>
+                    <td><strong>更新频率</strong></td>
+                    <td>按需</td>
+                    <td>实时</td>
+                    <td>手动</td>
+                    <td>按需</td>
+                    <td>实时</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 20px; margin: 30px 0;">
+            <h3 style="color: #10b981; margin-bottom: 15px;">💡 使用建议</h3>
+            <ul>
+                <li><strong>新用户：</strong>先访问"AI配置"设置GitHub Token，然后使用主聊天功能</li>
+                <li><strong>管理员：</strong>使用"系统管理"进行日常监控和维护</li>
+                <li><strong>内容管理：</strong>使用"爬取管理"添加和管理知识库内容</li>
+                <li><strong>故障排除：</strong>使用"调试信息"诊断问题</li>
+                <li><strong>管理员密码：</strong><code>admin123</code></li>
+            </ul>
+        </div>
+        
+        <div class="back-link">
+            <a href="index.html">← 返回主页</a>
+        </div>
+    </div>
+</body>
+</html>
