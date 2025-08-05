@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>功能测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            padding: 20px;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            position: relative;
+        }
+        
+        .fullscreen-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .fullscreen-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+        
+        .test-container.fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            border-radius: 0 !important;
+            z-index: 9999 !important;
+            margin: 0 !important;
+        }
+        
+        .nav-links {
+            margin: 20px 0;
+        }
+        
+        .nav-links a {
+            display: inline-block;
+            margin: 5px 10px;
+            padding: 10px 15px;
+            background: rgba(79, 70, 229, 0.8);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(79, 70, 229, 1);
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container" id="testContainer">
+        <div class="fullscreen-btn" onclick="testToggleFullscreen()" id="fullscreenBtn" title="全屏/退出全屏">
+            <svg id="fullscreenIcon" viewBox="0 0 24 24">
+                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+            </svg>
+        </div>
+        
+        <h1>🔧 功能测试页面</h1>
+        
+        <div class="nav-links">
+            <h3>管理页面跳转测试：</h3>
+            <a href="#" onclick="testAdminAccess('admin-dashboard.html'); return false;">🛠️ 系统管理</a>
+            <a href="#" onclick="testAdminAccess('admin.html'); return false;">⚙️ 管理面板</a>
+            <a href="#" onclick="testAdminAccess('firecrawl-manager.html'); return false;">🔥 爬取管理</a>
+            <a href="ai-config.html" target="_blank">🤖 AI配置</a>
+        </div>
+        
+        <div id="testStatus" class="status">
+            ✅ 页面加载完成，开始测试功能...
+        </div>
+        
+        <div>
+            <h3>测试说明：</h3>
+            <ul>
+                <li>点击右上角按钮测试全屏功能</li>
+                <li>点击管理链接测试跳转（密码：admin123）</li>
+                <li>查看控制台输出的调试信息</li>
+            </ul>
+        </div>
+        
+        <div>
+            <h3>调试信息：</h3>
+            <div id="debugInfo" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;">
+                页面初始化中...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isFullscreen = false;
+        let debugLog = [];
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            debugLog.push(logEntry);
+            
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.innerHTML = debugLog.slice(-10).join('<br>');
+            debugDiv.scrollTop = debugDiv.scrollHeight;
+            
+            console.log(logEntry);
+        }
+        
+        function testToggleFullscreen() {
+            log('全屏按钮被点击');
+            
+            const container = document.getElementById('testContainer');
+            const icon = document.getElementById('fullscreenIcon');
+            const btn = document.getElementById('fullscreenBtn');
+            
+            if (!container || !icon) {
+                log('❌ 错误：找不到必要的元素');
+                return;
+            }
+            
+            isFullscreen = !isFullscreen;
+            log(`切换全屏状态: ${isFullscreen}`);
+            
+            if (isFullscreen) {
+                container.classList.add('fullscreen');
+                icon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
+                btn.title = '退出全屏';
+                log('✅ 进入全屏模式');
+            } else {
+                container.classList.remove('fullscreen');
+                icon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+                btn.title = '全屏';
+                log('✅ 退出全屏模式');
+            }
+        }
+        
+        function testAdminAccess(targetPage) {
+            log(`尝试访问管理页面: ${targetPage}`);
+            
+            // 检查是否已验证
+            const isAuthenticated = sessionStorage.getItem('admin_authenticated');
+            
+            if (isAuthenticated === 'true') {
+                log('✅ 已验证，直接跳转');
+                window.open(targetPage, '_blank');
+                return;
+            }
+            
+            log('需要验证管理员密码');
+            
+            // 创建简化的密码输入框
+            const password = prompt('请输入管理员密码:');
+            
+            if (password === 'admin123') {
+                log('✅ 密码正确，保存验证状态');
+                sessionStorage.setItem('admin_authenticated', 'true');
+                
+                log(`正在跳转到: ${targetPage}`);
+                window.open(targetPage, '_blank');
+                
+                document.getElementById('testStatus').innerHTML = `✅ 验证成功！正在跳转到 ${targetPage}`;
+            } else if (password !== null) {
+                log('❌ 密码错误');
+                document.getElementById('testStatus').innerHTML = '❌ 密码错误，请重试';
+                document.getElementById('testStatus').className = 'status error';
+            } else {
+                log('用户取消了验证');
+            }
+        }
+        
+        // ESC键退出全屏
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && isFullscreen) {
+                log('ESC键被按下，退出全屏');
+                testToggleFullscreen();
+            }
+        });
+        
+        // 页面加载完成
+        window.onload = function() {
+            log('✅ 测试页面加载完成');
+            log('全屏按钮元素: ' + (document.getElementById('fullscreenBtn') ? '存在' : '不存在'));
+            log('容器元素: ' + (document.getElementById('testContainer') ? '存在' : '不存在'));
+        };
+    </script>
+</body>
+</html>

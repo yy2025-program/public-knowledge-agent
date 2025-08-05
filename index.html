@@ -1159,159 +1159,118 @@
         let isFullscreen = false;
 
         function toggleFullscreen() {
-            console.log('toggleFullscreen called, current state:', isFullscreen);
+            console.log('🔄 toggleFullscreen called, current state:', isFullscreen);
+            
             const chatContainer = document.getElementById('chatContainer');
             const fullscreenIcon = document.getElementById('fullscreenIcon');
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             
-            if (!chatContainer || !fullscreenIcon) {
-                console.error('Elements not found:', { chatContainer, fullscreenIcon });
+            // 检查元素是否存在
+            if (!chatContainer) {
+                console.error('❌ chatContainer not found');
+                alert('错误：找不到聊天容器元素');
                 return;
             }
             
-            isFullscreen = !isFullscreen;
-            console.log('New fullscreen state:', isFullscreen);
+            if (!fullscreenIcon) {
+                console.error('❌ fullscreenIcon not found');
+                alert('错误：找不到全屏图标元素');
+                return;
+            }
             
-            if (isFullscreen) {
-                // 进入全屏
-                chatContainer.classList.add('fullscreen');
-                fullscreenIcon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
-                fullscreenBtn.title = '退出全屏';
-                console.log('Entered fullscreen mode');
-            } else {
-                // 退出全屏
-                chatContainer.classList.remove('fullscreen');
-                fullscreenIcon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
-                fullscreenBtn.title = '全屏';
-                console.log('Exited fullscreen mode');
+            // 切换状态
+            isFullscreen = !isFullscreen;
+            console.log('✅ New fullscreen state:', isFullscreen);
+            
+            try {
+                if (isFullscreen) {
+                    // 进入全屏
+                    console.log('🔍 Entering fullscreen mode...');
+                    chatContainer.classList.add('fullscreen');
+                    fullscreenIcon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
+                    if (fullscreenBtn) fullscreenBtn.title = '退出全屏';
+                    console.log('✅ Entered fullscreen mode successfully');
+                } else {
+                    // 退出全屏
+                    console.log('🔍 Exiting fullscreen mode...');
+                    chatContainer.classList.remove('fullscreen');
+                    fullscreenIcon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+                    if (fullscreenBtn) fullscreenBtn.title = '全屏';
+                    console.log('✅ Exited fullscreen mode successfully');
+                }
+            } catch (error) {
+                console.error('❌ Error in toggleFullscreen:', error);
+                alert('全屏切换出错：' + error.message);
             }
         }
 
         // 监听ESC键退出全屏
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && isFullscreen) {
-                console.log('ESC key pressed, exiting fullscreen');
+                console.log('⌨️ ESC key pressed, exiting fullscreen');
                 toggleFullscreen();
             }
         });
 
-        // 管理员密码验证
+        // 管理员密码验证 - 简化版本
         function checkAdminAccess(targetPage) {
-            // 检查是否已经验证过（会话存储）
+            console.log('🔐 checkAdminAccess called for:', targetPage);
+            
+            // 检查是否已经验证过
             const isAuthenticated = sessionStorage.getItem('admin_authenticated');
             
             if (isAuthenticated === 'true') {
-                // 已验证，直接跳转
-                window.open(targetPage, '_blank');
+                console.log('✅ Already authenticated, opening:', targetPage);
+                try {
+                    window.open(targetPage, '_blank');
+                } catch (error) {
+                    console.error('❌ Failed to open window:', error);
+                    // 备用方案：直接跳转
+                    window.location.href = targetPage;
+                }
                 return;
             }
             
-            // 创建密码输入模态框
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-                background: rgba(0, 0, 0, 0.8); z-index: 10000; display: flex; 
-                align-items: center; justify-content: center; padding: 20px;
-                backdrop-filter: blur(10px);
-            `;
+            // 使用简单的prompt进行验证
+            console.log('🔍 Requesting password...');
+            const password = prompt('请输入管理员密码:');
             
-            modal.innerHTML = `
-                <div style="
-                    background: rgba(15, 23, 42, 0.95); 
-                    backdrop-filter: blur(20px);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    border-radius: 20px; 
-                    padding: 40px; 
-                    max-width: 400px; 
-                    width: 100%;
-                    text-align: center;
-                    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-                ">
-                    <div style="
-                        width: 60px; 
-                        height: 60px; 
-                        background: linear-gradient(135deg, #ef4444, #dc2626);
-                        border-radius: 50%; 
-                        margin: 0 auto 20px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
-                    ">
-                        <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
-                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/>
-                        </svg>
-                    </div>
-                    <h3 style="color: #e2e8f0; margin-bottom: 8px; font-size: 1.4rem; font-weight: 600;">管理员验证</h3>
-                    <p style="color: rgba(226, 232, 240, 0.7); margin-bottom: 24px; font-size: 14px;">请输入管理员密码以访问管理功能</p>
-                    <input type="password" id="adminPassword" placeholder="输入管理员密码" style="
-                        width: 100%; 
-                        padding: 12px 16px; 
-                        background: rgba(255, 255, 255, 0.08);
-                        border: 1px solid rgba(255, 255, 255, 0.15);
-                        border-radius: 8px; 
-                        color: #e2e8f0;
-                        font-size: 14px;
-                        margin-bottom: 20px;
-                        outline: none;
-                        box-sizing: border-box;
-                    ">
-                    <div style="display: flex; gap: 12px; justify-content: center;">
-                        <button onclick="verifyPassword('${targetPage}', this.closest('.modal-container'))" style="
-                            padding: 10px 20px;
-                            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-                            color: white;
-                            border: none;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-weight: 500;
-                            transition: all 0.3s ease;
-                        ">确认</button>
-                        <button onclick="this.closest('.modal-container').remove()" style="
-                            padding: 10px 20px;
-                            background: rgba(255, 255, 255, 0.1);
-                            color: #e2e8f0;
-                            border: 1px solid rgba(255, 255, 255, 0.2);
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-weight: 500;
-                            transition: all 0.3s ease;
-                        ">取消</button>
-                    </div>
-                    <div id="errorMessage" style="
-                        color: #ef4444; 
-                        font-size: 12px; 
-                        margin-top: 12px; 
-                        display: none;
-                    "></div>
-                </div>
-            `;
-            
-            modal.className = 'modal-container';
-            document.body.appendChild(modal);
-            
-            // 聚焦到密码输入框
-            setTimeout(() => {
-                const passwordInput = document.getElementById('adminPassword');
-                if (passwordInput) passwordInput.focus();
-            }, 100);
-            
-            // 支持回车键确认
-            const passwordInput = document.getElementById('adminPassword');
-            if (passwordInput) {
-                passwordInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        verifyPassword(targetPage, modal);
-                    }
-                });
+            if (password === null) {
+                console.log('🚫 User cancelled password input');
+                return;
             }
             
-            // 点击背景关闭
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
+            if (password === 'admin123') {
+                console.log('✅ Password correct, saving authentication');
+                sessionStorage.setItem('admin_authenticated', 'true');
+                
+                // 显示成功消息
+                const successMsg = document.createElement('div');
+                successMsg.style.cssText = `
+                    position: fixed; top: 20px; right: 20px; z-index: 10001;
+                    background: rgba(16, 185, 129, 0.9); color: white;
+                    padding: 12px 20px; border-radius: 8px;
+                    font-size: 14px; font-weight: 500;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                `;
+                successMsg.textContent = '✅ 验证成功，正在跳转...';
+                document.body.appendChild(successMsg);
+                
+                setTimeout(() => {
+                    successMsg.remove();
+                    try {
+                        console.log('🔗 Opening target page:', targetPage);
+                        window.open(targetPage, '_blank');
+                    } catch (error) {
+                        console.error('❌ Failed to open window:', error);
+                        window.location.href = targetPage;
+                    }
+                }, 1000);
+                
+            } else {
+                console.log('❌ Password incorrect');
+                alert('❌ 密码错误，请重试');
+            }
         }
                         ">确认</button>
                         <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
@@ -1354,48 +1313,6 @@
                     modal.remove();
                 }
             });
-        }
-
-        function verifyPassword(targetPage, modal) {
-            const password = document.getElementById('adminPassword').value;
-            const errorDiv = document.getElementById('errorMessage');
-            
-            // 管理员密码（您可以修改这个密码）
-            const ADMIN_PASSWORD = 'admin123';
-            
-            if (password === ADMIN_PASSWORD) {
-                // 密码正确，保存验证状态
-                sessionStorage.setItem('admin_authenticated', 'true');
-                modal.remove();
-                
-                // 跳转到目标页面
-                window.open(targetPage, '_blank');
-                
-                // 显示成功消息
-                const successMsg = document.createElement('div');
-                successMsg.style.cssText = `
-                    position: fixed; top: 20px; right: 20px; z-index: 10001;
-                    background: rgba(16, 185, 129, 0.9); color: white;
-                    padding: 12px 20px; border-radius: 8px;
-                    font-size: 14px; font-weight: 500;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-                `;
-                successMsg.textContent = '✅ 验证成功，正在跳转...';
-                document.body.appendChild(successMsg);
-                
-                setTimeout(() => successMsg.remove(), 3000);
-            } else {
-                // 密码错误
-                errorDiv.style.display = 'block';
-                errorDiv.textContent = '❌ 密码错误，请重试';
-                document.getElementById('adminPassword').value = '';
-                document.getElementById('adminPassword').focus();
-                
-                // 3秒后隐藏错误消息
-                setTimeout(() => {
-                    errorDiv.style.display = 'none';
-                }, 3000);
-            }
         }
 
         // 显示AI配置界面
