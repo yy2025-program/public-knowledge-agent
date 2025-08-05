@@ -85,7 +85,7 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
         }
         
-        /* 全屏按钮样式 - 强制显示 */
+        /* 全屏按钮样式 - 修复版本 */
         .fullscreen-btn {
             position: absolute !important;
             top: 20px !important;
@@ -94,10 +94,15 @@
             height: 40px !important;
             background: rgba(255, 255, 255, 0.15) !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            border-radius: 12px;
-            cursor: pointer;
+            border-radius: 12px !important;
+            cursor: pointer !important;
             display: flex !important;
-            align-items: center;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.3s ease !important;
+            z-index: 1000 !important;
+            backdrop-filter: blur(10px) !important;
+        }
             justify-content: center;
             transition: all 0.3s ease;
             z-index: 100 !important;
@@ -490,9 +495,10 @@
                 </div>
             </div>
             <div class="nav-links">
-                <a href="#" onclick="checkAdminAccess('admin-dashboard.html')" target="_blank">🛠️ 系统管理</a>
-                <a href="#" onclick="checkAdminAccess('admin.html')" target="_blank">⚙️ 管理面板</a>
-                <a href="#" onclick="checkAdminAccess('firecrawl-manager.html')" target="_blank">🔥 爬取管理</a>
+                <a href="ai-config.html" target="_blank">🤖 AI配置</a>
+                <a href="#" onclick="checkAdminAccess('admin-dashboard.html'); return false;">🛠️ 系统管理</a>
+                <a href="#" onclick="checkAdminAccess('admin.html'); return false;">⚙️ 管理面板</a>
+                <a href="#" onclick="checkAdminAccess('firecrawl-manager.html'); return false;">🔥 爬取管理</a>
             </div>
         </div>
         
@@ -1149,13 +1155,14 @@
             }
         }
 
-        // 全屏功能
+        // 全屏功能变量
         let isFullscreen = false;
 
         function toggleFullscreen() {
             console.log('toggleFullscreen called, current state:', isFullscreen);
             const chatContainer = document.getElementById('chatContainer');
             const fullscreenIcon = document.getElementById('fullscreenIcon');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
             
             if (!chatContainer || !fullscreenIcon) {
                 console.error('Elements not found:', { chatContainer, fullscreenIcon });
@@ -1167,31 +1174,15 @@
             
             if (isFullscreen) {
                 // 进入全屏
-                chatContainer.style.position = 'fixed';
-                chatContainer.style.top = '0';
-                chatContainer.style.left = '0';
-                chatContainer.style.width = '100vw';
-                chatContainer.style.height = '100vh';
-                chatContainer.style.maxWidth = 'none';
-                chatContainer.style.borderRadius = '0';
-                chatContainer.style.zIndex = '9999';
-                
+                chatContainer.classList.add('fullscreen');
                 fullscreenIcon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
-                document.getElementById('fullscreenBtn').title = '退出全屏';
+                fullscreenBtn.title = '退出全屏';
                 console.log('Entered fullscreen mode');
             } else {
                 // 退出全屏
-                chatContainer.style.position = 'relative';
-                chatContainer.style.top = 'auto';
-                chatContainer.style.left = 'auto';
-                chatContainer.style.width = '80%';
-                chatContainer.style.height = '550px';
-                chatContainer.style.maxWidth = '700px';
-                chatContainer.style.borderRadius = '24px';
-                chatContainer.style.zIndex = 'auto';
-                
+                chatContainer.classList.remove('fullscreen');
                 fullscreenIcon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
-                document.getElementById('fullscreenBtn').title = '全屏';
+                fullscreenBtn.title = '全屏';
                 console.log('Exited fullscreen mode');
             }
         }
@@ -1321,21 +1312,37 @@
             const errorDiv = document.getElementById('errorMessage');
             
             // 管理员密码（您可以修改这个密码）
-            const ADMIN_PASSWORD = 'admin2024';
+            const ADMIN_PASSWORD = 'admin123';
             
             if (password === ADMIN_PASSWORD) {
-                // 验证成功，保存到会话存储
+                // 密码正确，保存验证状态
                 sessionStorage.setItem('admin_authenticated', 'true');
                 modal.remove();
+                
+                // 跳转到目标页面
                 window.open(targetPage, '_blank');
+                
+                // 显示成功消息
+                const successMsg = document.createElement('div');
+                successMsg.style.cssText = `
+                    position: fixed; top: 20px; right: 20px; z-index: 10001;
+                    background: rgba(16, 185, 129, 0.9); color: white;
+                    padding: 12px 20px; border-radius: 8px;
+                    font-size: 14px; font-weight: 500;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                `;
+                successMsg.textContent = '✅ 验证成功，正在跳转...';
+                document.body.appendChild(successMsg);
+                
+                setTimeout(() => successMsg.remove(), 3000);
             } else {
-                // 验证失败
+                // 密码错误
                 errorDiv.style.display = 'block';
-                errorDiv.textContent = '密码错误，请重试';
+                errorDiv.textContent = '❌ 密码错误，请重试';
                 document.getElementById('adminPassword').value = '';
                 document.getElementById('adminPassword').focus();
                 
-                // 3秒后隐藏错误信息
+                // 3秒后隐藏错误消息
                 setTimeout(() => {
                     errorDiv.style.display = 'none';
                 }, 3000);
