@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理面板 - AI Knowledge Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+        
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: rgba(226, 232, 240, 0.7);
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .stat-card .change {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        
+        .positive { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .negative { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .neutral { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
+        
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .panel-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .panel-section h3 {
+            margin-bottom: 16px;
+            color: #e2e8f0;
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary { background: #3b82f6; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        
+        .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+        
+        .log-viewer {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+        
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            transition: width 0.3s ease;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online { background: #10b981; }
+        .status-offline { background: #ef4444; }
+        .status-warning { background: #f59e0b; }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .back-link a {
+            color: #60a5fa;
+            text-decoration: none;
+            padding: 10px 20px;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link a:hover {
+            background: rgba(96, 165, 250, 0.1);
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🛠️ 系统管理面板</h1>
+            <p>AI Knowledge Agent 运行状态监控与管理</p>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>知识库条目</h3>
+                <div class="value" id="knowledgeCount">-</div>
+                <div class="change neutral" id="knowledgeChange">加载中...</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>存储使用率</h3>
+                <div class="value" id="storageUsage">-</div>
+                <div class="change" id="storageChange">-</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>AI服务状态</h3>
+                <div class="value" id="aiStatus">-</div>
+                <div class="change" id="aiChange">检测中...</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>最后同步</h3>
+                <div class="value" id="lastSync">-</div>
+                <div class="change" id="syncStatus">-</div>
+            </div>
+        </div>
+        
+        <!-- 控制面板 -->
+        <div class="control-panel">
+            <!-- 数据管理 -->
+            <div class="panel-section">
+                <h3>📊 数据管理</h3>
+                <button class="btn btn-primary" onclick="refreshData()">刷新数据</button>
+                <button class="btn btn-success" onclick="exportData()">导出数据</button>
+                <button class="btn btn-warning" onclick="optimizeData()">优化数据</button>
+                <button class="btn btn-danger" onclick="clearData()">清空数据</button>
+                
+                <div style="margin-top: 16px;">
+                    <div>存储空间使用情况:</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="storageProgress" style="width: 0%"></div>
+                    </div>
+                    <div style="font-size: 0.8rem; color: rgba(226, 232, 240, 0.7);" id="storageDetails">-</div>
+                </div>
+            </div>
+            
+            <!-- 爬虫管理 -->
+            <div class="panel-section">
+                <h3>🕷️ 爬虫管理</h3>
+                <button class="btn btn-primary" onclick="startCrawling()">开始爬取</button>
+                <button class="btn btn-warning" onclick="pauseCrawling()">暂停爬取</button>
+                <button class="btn btn-success" onclick="batchCrawl()">批量爬取</button>
+                
+                <div style="margin-top: 16px;">
+                    <div>爬取进度:</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="crawlProgress" style="width: 0%"></div>
+                    </div>
+                    <div style="font-size: 0.8rem; color: rgba(226, 232, 240, 0.7);" id="crawlStatus">就绪</div>
+                </div>
+            </div>
+            
+            <!-- AI服务管理 -->
+            <div class="panel-section">
+                <h3>🤖 AI服务管理</h3>
+                <div style="margin-bottom: 12px;">
+                    <span class="status-indicator" id="githubStatus"></span>
+                    GitHub Models
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <span class="status-indicator" id="bedrockStatus"></span>
+                    AWS Bedrock
+                </div>
+                
+                <button class="btn btn-primary" onclick="testAIServices()">测试服务</button>
+                <button class="btn btn-success" onclick="window.open('ai-config.html', '_blank')">配置AI</button>
+            </div>
+            
+            <!-- 系统监控 -->
+            <div class="panel-section">
+                <h3>📈 系统监控</h3>
+                <button class="btn btn-primary" onclick="generateReport()">生成报告</button>
+                <button class="btn btn-success" onclick="downloadLogs()">下载日志</button>
+                <button class="btn btn-warning" onclick="clearLogs()">清空日志</button>
+                
+                <div style="margin-top: 16px;">
+                    <div>系统日志:</div>
+                    <div class="log-viewer" id="systemLogs">系统启动中...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="back-link">
+            <a href="index.html">← 返回主页</a>
+        </div>
+    </div>
+    
+    <script src="enhanced-crawler.js"></script>
+    <script src="smart-answer-generator.js"></script>
+    <script src="data-sync-manager.js"></script>
+    <script src="github-models-integration.js"></script>
+    <script>
+        let systemLogs = [];
+        let crawlInProgress = false;
+        
+        // 页面加载时初始化
+        window.onload = function() {
+            initializeDashboard();
+            updateStats();
+            setInterval(updateStats, 30000); // 每30秒更新一次
+        };
+        
+        function initializeDashboard() {
+            log('管理面板初始化完成');
+            checkAIServices();
+        }
+        
+        function updateStats() {
+            updateKnowledgeStats();
+            updateStorageStats();
+            updateSyncStats();
+        }
+        
+        function updateKnowledgeStats() {
+            const knowledgeBase = JSON.parse(localStorage.getItem('crawled_knowledge_base') || '[]');
+            const count = knowledgeBase.length;
+            
+            document.getElementById('knowledgeCount').textContent = count;
+            document.getElementById('knowledgeChange').textContent = `${count} 条记录`;
+            document.getElementById('knowledgeChange').className = count > 0 ? 'change positive' : 'change neutral';
+        }
+        
+        function updateStorageStats() {
+            let totalSize = 0;
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    totalSize += localStorage[key].length;
+                }
+            }
+            
+            const usageMB = (totalSize / 1024 / 1024).toFixed(2);
+            const usagePercent = Math.min((totalSize / (5 * 1024 * 1024)) * 100, 100);
+            
+            document.getElementById('storageUsage').textContent = `${usageMB}MB`;
+            document.getElementById('storageChange').textContent = `${usagePercent.toFixed(1)}% 已使用`;
+            document.getElementById('storageChange').className = usagePercent > 80 ? 'change negative' : 
+                                                                usagePercent > 60 ? 'change warning' : 'change positive';
+            
+            document.getElementById('storageProgress').style.width = `${usagePercent}%`;
+            document.getElementById('storageDetails').textContent = `${usageMB}MB / 5.00MB (${usagePercent.toFixed(1)}%)`;
+        }
+        
+        function updateSyncStats() {
+            const lastSyncTime = localStorage.getItem('last_sync_time');
+            if (lastSyncTime) {
+                const syncDate = new Date(parseInt(lastSyncTime));
+                const now = new Date();
+                const diffMinutes = Math.floor((now - syncDate) / 60000);
+                
+                if (diffMinutes < 60) {
+                    document.getElementById('lastSync').textContent = `${diffMinutes}分钟前`;
+                } else if (diffMinutes < 1440) {
+                    document.getElementById('lastSync').textContent = `${Math.floor(diffMinutes/60)}小时前`;
+                } else {
+                    document.getElementById('lastSync').textContent = `${Math.floor(diffMinutes/1440)}天前`;
+                }
+                
+                document.getElementById('syncStatus').textContent = diffMinutes < 60 ? '最新' : '需要同步';
+                document.getElementById('syncStatus').className = diffMinutes < 60 ? 'change positive' : 'change warning';
+            } else {
+                document.getElementById('lastSync').textContent = '从未';
+                document.getElementById('syncStatus').textContent = '需要同步';
+                document.getElementById('syncStatus').className = 'change negative';
+            }
+        }
+        
+        async function checkAIServices() {
+            // 检查GitHub Models
+            const githubToken = localStorage.getItem('github_models_token');
+            const githubStatus = document.getElementById('githubStatus');
+            
+            if (githubToken) {
+                try {
+                    const githubAI = new GitHubModelsAI();
+                    const isWorking = await githubAI.testConnection();
+                    githubStatus.className = isWorking ? 'status-indicator status-online' : 'status-indicator status-offline';
+                    document.getElementById('aiStatus').textContent = isWorking ? '在线' : '离线';
+                    document.getElementById('aiChange').textContent = isWorking ? 'GitHub Models 可用' : 'GitHub Models 不可用';
+                    document.getElementById('aiChange').className = isWorking ? 'change positive' : 'change negative';
+                } catch (error) {
+                    githubStatus.className = 'status-indicator status-offline';
+                    log(`GitHub Models 连接失败: ${error.message}`);
+                }
+            } else {
+                githubStatus.className = 'status-indicator status-warning';
+                document.getElementById('aiStatus').textContent = '未配置';
+                document.getElementById('aiChange').textContent = '需要配置AI服务';
+                document.getElementById('aiChange').className = 'change neutral';
+            }
+            
+            // 检查Bedrock (简化检查)
+            const bedrockStatus = document.getElementById('bedrockStatus');
+            const bedrockKey = localStorage.getItem('bedrock_api_key');
+            bedrockStatus.className = bedrockKey ? 'status-indicator status-warning' : 'status-indicator status-offline';
+        }
+        
+        function refreshData() {
+            log('刷新数据...');
+            updateStats();
+            checkAIServices();
+            log('数据刷新完成');
+        }
+        
+        function exportData() {
+            const data = {
+                knowledgeBase: JSON.parse(localStorage.getItem('crawled_knowledge_base') || '[]'),
+                settings: {
+                    github_token: localStorage.getItem('github_models_token') ? '***' : null,
+                    github_model: localStorage.getItem('github_models_current'),
+                    last_sync: localStorage.getItem('last_sync_time')
+                },
+                exportTime: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ai-knowledge-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            log('数据导出完成');
+        }
+        
+        function optimizeData() {
+            log('开始数据优化...');
+            
+            if (window.DataSyncManager) {
+                const syncManager = new DataSyncManager();
+                syncManager.optimizeDataStructure();
+                syncManager.cleanExpiredCache();
+                log('数据优化完成');
+            } else {
+                // 简单优化
+                const kb = JSON.parse(localStorage.getItem('crawled_knowledge_base') || '[]');
+                const optimized = kb.slice(0, 500); // 只保留500条最新的
+                localStorage.setItem('crawled_knowledge_base', JSON.stringify(optimized));
+                log(`数据优化完成: ${kb.length} -> ${optimized.length} 条记录`);
+            }
+            
+            updateStats();
+        }
+        
+        function clearData() {
+            if (confirm('确定要清空所有数据吗？此操作不可恢复！')) {
+                localStorage.removeItem('crawled_knowledge_base');
+                localStorage.removeItem('ai_response_cache');
+                localStorage.removeItem('search_cache');
+                log('所有数据已清空');
+                updateStats();
+            }
+        }
+        
+        async function startCrawling() {
+            if (crawlInProgress) {
+                log('爬取任务已在进行中');
+                return;
+            }
+            
+            crawlInProgress = true;
+            log('开始爬取任务...');
+            
+            // 示例URL列表
+            const urls = [
+                'https://sellercentral.amazon.com/help/hub/reference/G200141510',
+                'https://sellercentral.amazon.com/help/hub/reference/G53921',
+                'https://sellercentral.amazon.com/help/hub/reference/G201074400'
+            ];
+            
+            if (window.EnhancedCrawler) {
+                const crawler = new EnhancedCrawler();
+                
+                try {
+                    for (let i = 0; i < urls.length; i++) {
+                        const progress = ((i + 1) / urls.length) * 100;
+                        document.getElementById('crawlProgress').style.width = `${progress}%`;
+                        document.getElementById('crawlStatus').textContent = `爬取中... ${i + 1}/${urls.length}`;
+                        
+                        await crawler.crawlSingleUrl(urls[i]);
+                        log(`已爬取: ${urls[i]}`);
+                    }
+                    
+                    log('爬取任务完成');
+                    document.getElementById('crawlStatus').textContent = '爬取完成';
+                } catch (error) {
+                    log(`爬取失败: ${error.message}`);
+                    document.getElementById('crawlStatus').textContent = '爬取失败';
+                }
+            } else {
+                log('爬虫模块未加载');
+            }
+            
+            crawlInProgress = false;
+            updateStats();
+        }
+        
+        function pauseCrawling() {
+            crawlInProgress = false;
+            document.getElementById('crawlStatus').textContent = '已暂停';
+            log('爬取任务已暂停');
+        }
+        
+        function batchCrawl() {
+            const urls = prompt('请输入要爬取的URL列表（每行一个）:');
+            if (urls) {
+                const urlList = urls.split('\n').filter(url => url.trim());
+                log(`准备批量爬取 ${urlList.length} 个URL`);
+                // 这里可以调用批量爬取功能
+            }
+        }
+        
+        async function testAIServices() {
+            log('测试AI服务连接...');
+            await checkAIServices();
+            log('AI服务测试完成');
+        }
+        
+        function generateReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                stats: {
+                    knowledgeBase: JSON.parse(localStorage.getItem('crawled_knowledge_base') || '[]').length,
+                    storageUsage: Object.keys(localStorage).reduce((total, key) => total + localStorage[key].length, 0),
+                    lastSync: localStorage.getItem('last_sync_time')
+                },
+                logs: systemLogs.slice(-50) // 最近50条日志
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `system-report-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            log('系统报告已生成');
+        }
+        
+        function downloadLogs() {
+            const logText = systemLogs.join('\n');
+            const blob = new Blob([logText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `system-logs-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            log('日志文件已下载');
+        }
+        
+        function clearLogs() {
+            systemLogs = [];
+            document.getElementById('systemLogs').textContent = '日志已清空';
+            log('系统日志已清空');
+        }
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            systemLogs.push(logEntry);
+            
+            // 限制日志数量
+            if (systemLogs.length > 100) {
+                systemLogs = systemLogs.slice(-50);
+            }
+            
+            // 更新日志显示
+            const logViewer = document.getElementById('systemLogs');
+            logViewer.textContent = systemLogs.slice(-10).join('\n');
+            logViewer.scrollTop = logViewer.scrollHeight;
+        }
+    </script>
+</body>
+</html>

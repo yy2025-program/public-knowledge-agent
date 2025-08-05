@@ -434,6 +434,9 @@
     </style>
     <script src="bedrock-integration.js"></script>
     <script src="github-models-integration.js"></script>
+    <script src="enhanced-crawler.js"></script>
+    <script src="smart-answer-generator.js"></script>
+    <script src="data-sync-manager.js"></script>
 </head>
 <body>
     <div class="chat-container" id="chatContainer">
@@ -487,6 +490,7 @@
                 </div>
             </div>
             <div class="nav-links">
+                <a href="#" onclick="checkAdminAccess('admin-dashboard.html')" target="_blank">🛠️ 系统管理</a>
                 <a href="#" onclick="checkAdminAccess('admin.html')" target="_blank">⚙️ 管理面板</a>
                 <a href="#" onclick="checkAdminAccess('firecrawl-manager.html')" target="_blank">🔥 爬取管理</a>
             </div>
@@ -639,12 +643,21 @@
                 let answer;
                 
                 if (useRealAPI) {
-                    // 添加简洁的搜索提示
-                    addMessage('bot', `🔍 正在搜索知识库...`);
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                    
-                    // 检查是否启用了AI服务
-                    if (useGitHubModels && githubModelsAI) {
+                    // 使用智能回答生成器
+                    if (window.SmartAnswerGenerator && smartAnswerGenerator) {
+                        console.log('使用智能回答生成器');
+                        addMessage('bot', `🤖 AI正在分析您的问题...`);
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        
+                        const result = await smartAnswerGenerator.generateAnswer(question);
+                        answer = result.answer;
+                        
+                        // 显示置信度和来源信息
+                        if (result.confidence > 0.7) {
+                            answer += `\n\n*回答置信度: ${Math.round(result.confidence * 100)}%*`;
+                        }
+                        
+                    } else if (useGitHubModels && githubModelsAI) {
                         console.log('使用GitHub Models AI回答');
                         answer = await generateGitHubModelsAnswer(question, searchCrawledKnowledge(question));
                     } else if (useBedrockAI && bedrockAI) {
@@ -1596,6 +1609,29 @@
         window.onload = function() {
             document.getElementById('questionInput').focus();
             checkAPIStatus();
+            
+            // 初始化增强功能
+            if (window.EnhancedCrawler) {
+                window.enhancedCrawler = new EnhancedCrawler();
+            }
+            
+            if (window.SmartAnswerGenerator) {
+                window.smartAnswerGenerator = new SmartAnswerGenerator();
+            }
+            
+            if (window.DataSyncManager) {
+                window.dataSyncManager = new DataSyncManager();
+                
+                // 监听数据同步事件
+                document.addEventListener('dataSync', function(e) {
+                    const { event, data } = e.detail;
+                    if (event === 'sync_complete') {
+                        updateAPIStatus('connected', '✅ 数据已同步，AI增强功能可用');
+                    } else if (event === 'sync_error') {
+                        console.warn('数据同步失败:', data);
+                    }
+                });
+            }
         };
     </script>
 </body>
