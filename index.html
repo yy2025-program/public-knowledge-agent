@@ -562,7 +562,7 @@
                     useRealAPI = true;
                     useBedrockAI = false;
                     useGitHubModels = false;
-                    updateAPIStatus('connected', '✅ 网络连接正常 - 使用本地智能问答 | <span onclick="showAIConfig()" style="cursor: pointer; text-decoration: underline; margin-left: 10px;">🚀 配置AI增强</span>');
+                    updateAPIStatus('connected', '✅ 网络连接正常 - 使用本地智能问答 | <a href="ai-config.html" target="_blank" style="cursor: pointer; text-decoration: underline; margin-left: 10px; color: #60a5fa;">🚀 配置AI增强</a>');
                 } else {
                     throw new Error('网络连接异常');
                 }
@@ -570,7 +570,7 @@
                 useRealAPI = false;
                 useBedrockAI = false;
                 useGitHubModels = false;
-                updateAPIStatus('disconnected', '⚠️ 网络连接异常 - 使用离线模式 | <span onclick="showAIConfig()" style="cursor: pointer; text-decoration: underline; margin-left: 10px;">🚀 配置AI增强</span>');
+                updateAPIStatus('disconnected', '⚠️ 网络连接异常 - 使用离线模式 | <a href="ai-config.html" target="_blank" style="cursor: pointer; text-decoration: underline; margin-left: 10px; color: #60a5fa;">🚀 配置AI增强</a>');
             }
         }
 

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI配置 - AI Logistics Knowledge Agent</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #e2e8f0;
+            margin-bottom: 10px;
+        }
+        
+        .config-section {
+            background: rgba(79, 70, 229, 0.1);
+            border: 1px solid rgba(79, 70, 229, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .config-section h3 {
+            color: #e2e8f0;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #e2e8f0;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 13px;
+            outline: none;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 12px;
+            margin-right: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(59, 130, 246, 0.8);
+            color: white;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 12px;
+            display: none;
+        }
+        
+        .status.success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status.error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .status.info { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI增强配置</h1>
+            <p style="color: rgba(226, 232, 240, 0.7);">配置免费AI服务以启用高级问答功能</p>
+        </div>
+        
+        <!-- GitHub Models 配置 -->
+        <div class="config-section">
+            <h3>🆓 GitHub Models (推荐 - 完全免费)</h3>
+            
+            <div class="form-group">
+                <label>GitHub Personal Access Token:</label>
+                <input type="password" id="githubToken" placeholder="输入您的GitHub Token">
+            </div>
+            
+            <div class="form-group">
+                <label>AI模型:</label>
+                <select id="githubModel">
+                    <option value="gpt-4o-mini">GPT-4o Mini (推荐)</option>
+                    <option value="gpt-4o">GPT-4o (高级)</option>
+                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+                    <option value="llama-3.1-70b-instruct">Llama 3.1 70B</option>
+                    <option value="phi-3.5-mini-instruct">Phi-3.5 Mini</option>
+                </select>
+            </div>
+            
+            <button class="btn btn-primary" onclick="saveGitHubConfig()">保存配置</button>
+            <button class="btn btn-secondary" onclick="testGitHubConnection()">测试连接</button>
+            
+            <div id="githubStatus" class="status"></div>
+            
+            <p style="color: rgba(226, 232, 240, 0.6); font-size: 11px; margin-top: 10px;">
+                💡 获取Token: <a href="https://github.com/settings/tokens" target="_blank" style="color: #60a5fa;">GitHub Settings → Developer settings → Personal access tokens</a>
+            </p>
+        </div>
+        
+        <div class="back-link">
+            <a href="index.html">← 返回主页</a>
+        </div>
+    </div>
+    
+    <script src="github-models-integration.js"></script>
+    <script>
+        // 页面加载时初始化
+        window.onload = function() {
+            const savedToken = localStorage.getItem('github_models_token') || '';
+            const savedModel = localStorage.getItem('github_models_current') || 'gpt-4o-mini';
+            
+            document.getElementById('githubToken').value = savedToken;
+            document.getElementById('githubModel').value = savedModel;
+        };
+        
+        function showStatus(elementId, type, message) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${type}`;
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        function saveGitHubConfig() {
+            const token = document.getElementById('githubToken').value.trim();
+            const model = document.getElementById('githubModel').value;
+            
+            if (!token) {
+                showStatus('githubStatus', 'error', '请输入GitHub Token');
+                return;
+            }
+            
+            localStorage.setItem('github_models_token', token);
+            localStorage.setItem('github_models_current', model);
+            
+            showStatus('githubStatus', 'success', '✅ GitHub Models配置已保存！');
+            
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        }
+        
+        async function testGitHubConnection() {
+            const token = document.getElementById('githubToken').value.trim();
+            const model = document.getElementById('githubModel').value;
+            
+            if (!token) {
+                showStatus('githubStatus', 'error', '请先输入GitHub Token');
+                return;
+            }
+            
+            showStatus('githubStatus', 'info', '🔄 正在测试GitHub Models连接...');
+            
+            try {
+                const testAI = new GitHubModelsAI();
+                testAI.setApiKey(token);
+                testAI.setModel(model);
+                const isWorking = await testAI.testConnection();
+                
+                if (isWorking) {
+                    showStatus('githubStatus', 'success', `✅ 连接成功！GitHub Models (${model}) 可以正常使用`);
+                } else {
+                    showStatus('githubStatus', 'error', '❌ 连接失败，请检查Token权限和网络');
+                }
+            } catch (error) {
+                showStatus('githubStatus', 'error', `❌ 连接失败：${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>
