@@ -56,14 +56,14 @@
         }
         
         .chat-container.fullscreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            max-width: none;
-            border-radius: 0;
-            z-index: 9999;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            border-radius: 0 !important;
+            z-index: 9999 !important;
         }
         
         .chat-container.fullscreen .header {
@@ -1201,6 +1201,7 @@
             const isAuthenticated = sessionStorage.getItem('admin_authenticated');
             
             if (isAuthenticated === 'true') {
+                // 已验证，直接跳转
                 window.open(targetPage, '_blank');
                 return;
             }
@@ -1253,9 +1254,10 @@
                         font-size: 14px;
                         margin-bottom: 20px;
                         outline: none;
+                        box-sizing: border-box;
                     ">
                     <div style="display: flex; gap: 12px; justify-content: center;">
-                        <button onclick="verifyPassword('${targetPage}', this.parentElement.parentElement.parentElement)" style="
+                        <button onclick="verifyPassword('${targetPage}', this.closest('.modal-container'))" style="
                             padding: 10px 20px;
                             background: linear-gradient(135deg, #4f46e5, #7c3aed);
                             color: white;
@@ -1264,6 +1266,53 @@
                             cursor: pointer;
                             font-weight: 500;
                             transition: all 0.3s ease;
+                        ">确认</button>
+                        <button onclick="this.closest('.modal-container').remove()" style="
+                            padding: 10px 20px;
+                            background: rgba(255, 255, 255, 0.1);
+                            color: #e2e8f0;
+                            border: 1px solid rgba(255, 255, 255, 0.2);
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 500;
+                            transition: all 0.3s ease;
+                        ">取消</button>
+                    </div>
+                    <div id="errorMessage" style="
+                        color: #ef4444; 
+                        font-size: 12px; 
+                        margin-top: 12px; 
+                        display: none;
+                    "></div>
+                </div>
+            `;
+            
+            modal.className = 'modal-container';
+            document.body.appendChild(modal);
+            
+            // 聚焦到密码输入框
+            setTimeout(() => {
+                const passwordInput = document.getElementById('adminPassword');
+                if (passwordInput) passwordInput.focus();
+            }, 100);
+            
+            // 支持回车键确认
+            const passwordInput = document.getElementById('adminPassword');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        verifyPassword(targetPage, modal);
+                    }
+                });
+            }
+            
+            // 点击背景关闭
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
                         ">确认</button>
                         <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
                             padding: 10px 20px;

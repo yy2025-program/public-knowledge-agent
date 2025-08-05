@@ -30,6 +30,10 @@ class GitHubModelsAI {
     async callModel(messages, model = null) {
         const modelId = model || this.currentModel;
         
+        if (!this.apiKey) {
+            throw new Error('GitHub Personal Access Token 未设置。请在AI配置页面设置Token。');
+        }
+        
         const payload = {
             messages: messages,
             max_tokens: 1000,
@@ -37,6 +41,12 @@ class GitHubModelsAI {
             top_p: 0.9,
             stream: false
         };
+
+        console.log('GitHub Models API 请求:', {
+            url: `${this.baseURL}/${modelId}/chat/completions`,
+            model: modelId,
+            hasToken: !!this.apiKey
+        });
 
         try {
             const response = await fetch(`${this.baseURL}/${modelId}/chat/completions`, {
@@ -48,15 +58,35 @@ class GitHubModelsAI {
                 body: JSON.stringify(payload)
             });
 
+            console.log('GitHub Models API 响应状态:', response.status);
+
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(`GitHub Models API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+                const errorText = await response.text();
+                let errorData;
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch (e) {
+                    errorData = { message: errorText };
+                }
+                
+                console.error('GitHub Models API 错误详情:', errorData);
+                
+                if (response.status === 401) {
+                    throw new Error('GitHub Token 无效或已过期。请检查Token权限设置。');
+                } else if (response.status === 403) {
+                    throw new Error('GitHub Token 权限不足。请确保Token有访问GitHub Models的权限。');
+                } else if (response.status === 429) {
+                    throw new Error('API调用频率超限。请稍后再试。');
+                } else {
+                    throw new Error(`GitHub Models API 错误 (${response.status}): ${errorData.error?.message || errorData.message || '未知错误'}`);
+                }
             }
 
             const data = await response.json();
+            console.log('GitHub Models API 成功响应');
             return data.choices[0].message.content;
         } catch (error) {
-            console.error('GitHub Models API call failed:', error);
+            console.error('GitHub Models API 调用失败:', error);
             throw error;
         }
     }

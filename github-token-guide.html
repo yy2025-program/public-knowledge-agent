@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Token 设置指南</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .step {
+            background: rgba(79, 70, 229, 0.1);
+            border: 1px solid rgba(79, 70, 229, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .step h3 {
+            color: #10b981;
+            margin-bottom: 15px;
+        }
+        
+        .code {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .warning {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .back-link a {
+            padding: 10px 20px;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link a:hover {
+            background: rgba(96, 165, 250, 0.1);
+            border-color: rgba(96, 165, 250, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 GitHub Personal Access Token 设置指南</h1>
+        
+        <div class="step">
+            <h3>步骤 1: 访问 GitHub 设置页面</h3>
+            <p>1. 登录你的 GitHub 账号</p>
+            <p>2. 点击右上角头像，选择 "Settings"</p>
+            <p>3. 在左侧菜单中找到 "Developer settings"</p>
+            <p>4. 点击 "Personal access tokens" → "Tokens (classic)"</p>
+            <p>或直接访问：<a href="https://github.com/settings/tokens" target="_blank">https://github.com/settings/tokens</a></p>
+        </div>
+        
+        <div class="step">
+            <h3>步骤 2: 创建新的 Token</h3>
+            <p>1. 点击 "Generate new token" → "Generate new token (classic)"</p>
+            <p>2. 填写 Token 描述，例如：<span class="code">AI Knowledge Agent</span></p>
+            <p>3. 设置过期时间（建议选择 "No expiration" 或较长时间）</p>
+        </div>
+        
+        <div class="step">
+            <h3>步骤 3: 选择权限范围</h3>
+            <p>为了使用 GitHub Models API，你需要选择以下权限：</p>
+            <div class="code">
+✅ repo (完整仓库访问权限)<br>
+✅ user (用户信息访问权限)<br>
+✅ read:org (组织读取权限)<br>
+✅ workflow (工作流权限)
+            </div>
+            <div class="warning">
+                <strong>⚠️ 重要：</strong> 确保选择了 <code>repo</code> 权限，这是访问 GitHub Models API 的必要权限。
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>步骤 4: 生成并复制 Token</h3>
+            <p>1. 点击页面底部的 "Generate token" 按钮</p>
+            <p>2. <strong>立即复制生成的 Token</strong>（只会显示一次！）</p>
+            <p>3. Token 格式类似：<span class="code">ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</span></p>
+        </div>
+        
+        <div class="step">
+            <h3>步骤 5: 在 AI 配置页面使用 Token</h3>
+            <p>1. 返回 AI Knowledge Agent 的 AI 配置页面</p>
+            <p>2. 将复制的 Token 粘贴到 "GitHub Personal Access Token" 输入框</p>
+            <p>3. 选择你想使用的 AI 模型</p>
+            <p>4. 点击 "测试连接" 验证 Token 是否有效</p>
+            <p>5. 如果测试成功，点击 "保存配置"</p>
+        </div>
+        
+        <div class="success">
+            <h3>✅ 成功配置后你将获得：</h3>
+            <ul>
+                <li>免费使用 GPT-4o、Claude 3.5 Sonnet 等顶级 AI 模型</li>
+                <li>每月大量的免费 API 调用额度</li>
+                <li>更智能、更准确的问答体验</li>
+            </ul>
+        </div>
+        
+        <div class="warning">
+            <h3>🔒 安全提醒：</h3>
+            <ul>
+                <li>不要将 Token 分享给他人</li>
+                <li>不要在公开场所展示 Token</li>
+                <li>如果 Token 泄露，立即在 GitHub 设置中删除并重新生成</li>
+                <li>定期检查 Token 的使用情况</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <h3>🔧 常见问题解决：</h3>
+            <p><strong>Q: 提示 "401 Unauthorized" 错误？</strong></p>
+            <p>A: Token 可能无效或已过期，请重新生成 Token。</p>
+            
+            <p><strong>Q: 提示 "403 Forbidden" 错误？</strong></p>
+            <p>A: Token 权限不足，请确保选择了 <code>repo</code> 权限。</p>
+            
+            <p><strong>Q: 提示 "429 Too Many Requests" 错误？</strong></p>
+            <p>A: API 调用频率超限，请稍后再试。</p>
+        </div>
+        
+        <div class="back-link">
+            <a href="ai-config.html">← 返回 AI 配置页面</a>
+        </div>
+    </div>
+</body>
+</html>
