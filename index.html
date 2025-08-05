@@ -433,6 +433,7 @@
         }
     </style>
     <script src="bedrock-integration.js"></script>
+    <script src="github-models-integration.js"></script>
 </head>
 <body>
     <div class="chat-container" id="chatContainer">
@@ -516,13 +517,30 @@
         const API_BASE_URL = 'https://jsonplaceholder.typicode.com';
         let useRealAPI = true; // 使用模拟API
 
-        // 初始化Bedrock AI
+        // 初始化AI服务
         let bedrockAI = null;
+        let githubModelsAI = null;
         let useBedrockAI = false;
+        let useGitHubModels = false;
 
         // 检测API连接状态
         async function checkAPIStatus() {
             try {
+                // 优先检查GitHub Models API
+                const githubToken = localStorage.getItem('github_models_token');
+                if (githubToken) {
+                    githubModelsAI = new GitHubModelsAI();
+                    const isGitHubWorking = await githubModelsAI.testConnection();
+                    if (isGitHubWorking) {
+                        useRealAPI = true;
+                        useGitHubModels = true;
+                        useBedrockAI = false;
+                        const modelInfo = githubModelsAI.getCurrentModelInfo();
+                        updateAPIStatus('connected', `🤖 GitHub Models AI已连接 (${modelInfo.name}) - 使用免费AI问答`);
+                        return;
+                    }
+                }
+
                 // 检查是否配置了Bedrock API
                 const bedrockKey = localStorage.getItem('bedrock_api_key');
                 if (bedrockKey) {
@@ -531,6 +549,7 @@
                     if (isBedrockWorking) {
                         useRealAPI = true;
                         useBedrockAI = true;
+                        useGitHubModels = false;
                         updateAPIStatus('connected', '🤖 Amazon Bedrock AI已连接 - 使用高级AI问答');
                         return;
                     }
@@ -542,6 +561,7 @@
                 if (response.ok) {
                     useRealAPI = true;
                     useBedrockAI = false;
+                    useGitHubModels = false;
                     updateAPIStatus('connected', '✅ 网络连接正常 - 使用本地智能问答 | <span onclick="showAIConfig()" style="cursor: pointer; text-decoration: underline; margin-left: 10px;">🚀 配置AI增强</span>');
                 } else {
                     throw new Error('网络连接异常');
@@ -549,6 +569,7 @@
             } catch (error) {
                 useRealAPI = false;
                 useBedrockAI = false;
+                useGitHubModels = false;
                 updateAPIStatus('disconnected', '⚠️ 网络连接异常 - 使用离线模式 | <span onclick="showAIConfig()" style="cursor: pointer; text-decoration: underline; margin-left: 10px;">🚀 配置AI增强</span>');
             }
         }
@@ -629,8 +650,10 @@
                         await new Promise(resolve => setTimeout(resolve, 300));
                     }
                     
-                    // 如果使用Bedrock AI，需要异步处理
-                    if (useBedrockAI) {
+                    // 如果使用AI服务，需要异步处理
+                    if (useGitHubModels) {
+                        answer = await generateGitHubModelsAnswer(question, searchCrawledKnowledge(question));
+                    } else if (useBedrockAI) {
                         answer = await generateBedrockAnswer(question, searchCrawledKnowledge(question));
                     } else {
                         answer = generateSmartAnswer(question);
@@ -669,6 +692,11 @@
             // 首先搜索FireCrawl爬取的知识库
             const crawledResults = searchCrawledKnowledge(question);
             console.log('FireCrawl搜索结果数量:', crawledResults.length);
+            
+            // 如果启用了GitHub Models AI，优先使用
+            if (useGitHubModels && githubModelsAI) {
+                return generateGitHubModelsAnswer(question, crawledResults);
+            }
             
             // 如果启用了Bedrock AI，使用AI增强回答
             if (useBedrockAI && bedrockAI) {
@@ -720,6 +748,34 @@
 
             // 如果没有找到匹配的内容，提供帮助信息
             return generateHelpfulResponse(question);
+        }
+
+        // 使用GitHub Models AI生成增强回答
+        async function generateGitHubModelsAnswer(question, crawledResults) {
+            try {
+                console.log('使用GitHub Models AI生成回答');
+                const aiAnswer = await githubModelsAI.enhancedQA(question, crawledResults);
+                
+                const modelInfo = githubModelsAI.getCurrentModelInfo();
+                let response = `🤖 **AI增强回答 (${modelInfo.name})：**\n\n${aiAnswer}`;
+                
+                // 如果有爬取的内容，添加来源信息
+                if (crawledResults.length > 0) {
+                    response += `\n\n📚 **参考来源：**\n`;
+                    crawledResults.slice(0, 2).forEach(item => {
+                        response += `• ${item.title} - ${item.url}\n`;
+                    });
+                }
+                
+                return response;
+            } catch (error) {
+                console.error('GitHub Models AI调用失败:', error);
+                // 降级到本地回答
+                if (crawledResults.length > 0) {
+                    return generateAnswerFromCrawledData(question, crawledResults);
+                }
+                return `抱歉，AI服务暂时不可用。${generateHelpfulResponse(question)}`;
+            }
         }
 
         // 使用Bedrock AI生成增强回答
@@ -1432,6 +1488,70 @@
                 messageDiv.textContent = `❌ 连接失败：${error.message}`;
             }
         }
+
+        // 保存GitHub Models配置
+        function saveGitHubConfig() {
+            const token = document.getElementById('githubToken').value.trim();
+            const model = document.getElementById('githubModel').value;
+            const messageDiv = document.getElementById('aiConfigMessage');
+            
+            if (!token) {
+                messageDiv.style.display = 'block';
+                messageDiv.style.color = '#ef4444';
+                messageDiv.textContent = '请输入GitHub Token';
+                return;
+            }
+            
+            localStorage.setItem('github_models_token', token);
+            localStorage.setItem('github_models_current', model);
+            
+            messageDiv.style.display = 'block';
+            messageDiv.style.color = '#10b981';
+            messageDiv.textContent = '✅ GitHub Models配置已保存，正在重新检测API状态...';
+            
+            // 重新初始化
+            setTimeout(() => {
+                checkAPIStatus();
+                document.querySelector('[style*="position: fixed"]').remove();
+            }, 1500);
+        }
+
+        // 测试GitHub Models连接
+        async function testGitHubConnection() {
+            const token = document.getElementById('githubToken').value.trim();
+            const model = document.getElementById('githubModel').value;
+            const messageDiv = document.getElementById('aiConfigMessage');
+            
+            if (!token) {
+                messageDiv.style.display = 'block';
+                messageDiv.style.color = '#ef4444';
+                messageDiv.textContent = '请先输入GitHub Token';
+                return;
+            }
+            
+            messageDiv.style.display = 'block';
+            messageDiv.style.color = '#3b82f6';
+            messageDiv.textContent = '🔄 正在测试GitHub Models连接...';
+            
+            try {
+                const testAI = new GitHubModelsAI();
+                testAI.setApiKey(token);
+                testAI.setModel(model);
+                const isWorking = await testAI.testConnection();
+                
+                if (isWorking) {
+                    messageDiv.style.color = '#10b981';
+                    messageDiv.textContent = `✅ 连接成功！GitHub Models (${model}) 可以正常使用`;
+                } else {
+                    messageDiv.style.color = '#ef4444';
+                    messageDiv.textContent = '❌ 连接失败，请检查Token权限和网络';
+                }
+            } catch (error) {
+                messageDiv.style.color = '#ef4444';
+                messageDiv.textContent = `❌ 连接失败：${error.message}`;
+            }
+        }
+
         window.onload = function() {
             document.getElementById('questionInput').focus();
             checkAPIStatus();
