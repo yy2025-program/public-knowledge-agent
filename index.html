@@ -639,15 +639,40 @@
                 let answer;
                 
                 if (useRealAPI) {
-                    // 使用增强的本地智能问答
-                    await new Promise(resolve => setTimeout(resolve, 800)); // 模拟思考时间
-                    
                     // 添加简洁的搜索提示
-                    const knowledgeBase = JSON.parse(localStorage.getItem('crawled_knowledge_base') || '[]');
-                    if (knowledgeBase.length > 0) {
-                        console.log(`知识库包含 ${knowledgeBase.length} 条爬取内容`);
-                        addMessage('bot', `🔍 正在搜索知识库...`);
-                        await new Promise(resolve => setTimeout(resolve, 300));
+                    addMessage('bot', `🔍 正在搜索知识库...`);
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    // 检查是否启用了AI服务
+                    if (useGitHubModels && githubModelsAI) {
+                        console.log('使用GitHub Models AI回答');
+                        answer = await generateGitHubModelsAnswer(question, searchCrawledKnowledge(question));
+                    } else if (useBedrockAI && bedrockAI) {
+                        console.log('使用Bedrock AI回答');
+                        answer = await generateBedrockAnswer(question, searchCrawledKnowledge(question));
+                    } else {
+                        console.log('使用本地智能问答');
+                        answer = generateSmartAnswer(question);
+                    }
+                } else {
+                    // 离线模式
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    answer = generateBasicAnswer(question);
+                }
+                
+                addMessage('bot', answer);
+                
+            } catch (error) {
+                console.error('问答出错:', error);
+                addMessage('bot', '抱歉，服务暂时不可用，请稍后再试。');
+            } finally {
+                // 恢复输入状态
+                questionInput.disabled = false;
+                document.getElementById('askButton').disabled = false;
+                document.getElementById('loading').style.display = 'none';
+                questionInput.focus();
+            }
+        }
                     }
                     
                     // 如果使用AI服务，需要异步处理
@@ -1111,7 +1136,7 @@
             }
         }
 
-        // 全屏功能 - 调试版本
+        // 全屏功能
         let isFullscreen = false;
 
         function toggleFullscreen() {
@@ -1129,13 +1154,29 @@
             
             if (isFullscreen) {
                 // 进入全屏
-                chatContainer.classList.add('fullscreen');
+                chatContainer.style.position = 'fixed';
+                chatContainer.style.top = '0';
+                chatContainer.style.left = '0';
+                chatContainer.style.width = '100vw';
+                chatContainer.style.height = '100vh';
+                chatContainer.style.maxWidth = 'none';
+                chatContainer.style.borderRadius = '0';
+                chatContainer.style.zIndex = '9999';
+                
                 fullscreenIcon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
                 document.getElementById('fullscreenBtn').title = '退出全屏';
                 console.log('Entered fullscreen mode');
             } else {
                 // 退出全屏
-                chatContainer.classList.remove('fullscreen');
+                chatContainer.style.position = 'relative';
+                chatContainer.style.top = 'auto';
+                chatContainer.style.left = 'auto';
+                chatContainer.style.width = '80%';
+                chatContainer.style.height = '550px';
+                chatContainer.style.maxWidth = '700px';
+                chatContainer.style.borderRadius = '24px';
+                chatContainer.style.zIndex = 'auto';
+                
                 fullscreenIcon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
                 document.getElementById('fullscreenBtn').title = '全屏';
                 console.log('Exited fullscreen mode');
