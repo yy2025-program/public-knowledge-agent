@@ -442,6 +442,112 @@
     <script src="enhanced-crawler.js"></script>
     <script src="smart-answer-generator.js"></script>
     <script src="data-sync-manager.js"></script>
+    
+    <!-- 基本功能脚本 - 确保优先加载 -->
+    <script>
+        // 全局变量
+        let isFullscreen = false;
+        
+        // 基本全屏功能
+        function toggleFullscreen() {
+            console.log('🔄 toggleFullscreen called, current state:', isFullscreen);
+            
+            const chatContainer = document.getElementById('chatContainer');
+            const fullscreenIcon = document.getElementById('fullscreenIcon');
+            
+            if (!chatContainer) {
+                console.error('❌ chatContainer not found');
+                alert('错误：找不到聊天容器');
+                return;
+            }
+            
+            if (!fullscreenIcon) {
+                console.error('❌ fullscreenIcon not found');
+                alert('错误：找不到全屏图标');
+                return;
+            }
+            
+            isFullscreen = !isFullscreen;
+            console.log('✅ 切换全屏状态:', isFullscreen);
+            
+            if (isFullscreen) {
+                chatContainer.classList.add('fullscreen');
+                fullscreenIcon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
+                console.log('✅ 进入全屏模式');
+            } else {
+                chatContainer.classList.remove('fullscreen');
+                fullscreenIcon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+                console.log('✅ 退出全屏模式');
+            }
+        }
+        
+        // 基本管理访问功能
+        function checkAdminAccess(targetPage) {
+            console.log('🔐 checkAdminAccess called for:', targetPage);
+            
+            const isAuthenticated = sessionStorage.getItem('admin_authenticated');
+            
+            if (isAuthenticated === 'true') {
+                console.log('✅ 已验证，直接跳转');
+                window.open(targetPage, '_blank');
+                return;
+            }
+            
+            const password = prompt('请输入管理员密码:');
+            
+            if (password === 'admin123') {
+                console.log('✅ 密码正确');
+                sessionStorage.setItem('admin_authenticated', 'true');
+                alert('✅ 验证成功，正在跳转...');
+                setTimeout(() => {
+                    window.open(targetPage, '_blank');
+                }, 500);
+            } else if (password !== null) {
+                console.log('❌ 密码错误');
+                alert('❌ 密码错误，请重试');
+            }
+        }
+        
+        // 调试信息功能
+        function showDebugInfo() {
+            console.log('🔧 showDebugInfo called');
+            
+            const info = {
+                elements: {
+                    chatContainer: !!document.getElementById('chatContainer'),
+                    fullscreenBtn: !!document.getElementById('fullscreenBtn'),
+                    fullscreenIcon: !!document.getElementById('fullscreenIcon')
+                },
+                functions: {
+                    toggleFullscreen: typeof toggleFullscreen === 'function',
+                    checkAdminAccess: typeof checkAdminAccess === 'function'
+                },
+                variables: {
+                    isFullscreen: isFullscreen
+                }
+            };
+            
+            alert('调试信息:\n' + JSON.stringify(info, null, 2));
+            console.log('🔧 调试信息:', info);
+        }
+        
+        // ESC键退出全屏
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && isFullscreen) {
+                console.log('⌨️ ESC键退出全屏');
+                toggleFullscreen();
+            }
+        });
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ 页面DOM加载完成');
+            console.log('🔍 检查关键元素:');
+            console.log('- chatContainer:', !!document.getElementById('chatContainer'));
+            console.log('- fullscreenBtn:', !!document.getElementById('fullscreenBtn'));
+            console.log('- fullscreenIcon:', !!document.getElementById('fullscreenIcon'));
+        });
+    </script>
 </head>
 <body>
     <div class="chat-container" id="chatContainer">
