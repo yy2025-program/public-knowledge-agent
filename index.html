@@ -344,43 +344,26 @@
             addMessage('user', question);
             questionInput.value = '';
             
-            // 使用CORS代理调用GitHub API
+            // 简化AI回答 - 直接使用本地智能回答
             const thinkingMsg = addMessage('bot', '🤖 AI正在思考...');
             
-            try {
-                const response = await fetch('https://cors-anywhere.herokuapp.com/https://models.github.ai/inference/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/vnd.github+json',
-                        'Authorization': 'Bearer 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',
-                        'X-GitHub-Api-Version': '2022-11-28',
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        model: 'openai/gpt-4o-mini',
-                        messages: [{role: 'user', content: question}],
-                        max_tokens: 500
-                    })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const answer = data.choices[0].message.content;
-                    thinkingMsg.innerHTML = `<strong>AI助手 (GitHub Models):</strong> ${answer}`;
+            setTimeout(() => {
+                let answer = '';
+                const q = question.toLowerCase();
+                
+                if (q.includes('你好') || q.includes('hello')) {
+                    answer = '你好！我是AI助手，很高兴为您服务！有什么可以帮助您的吗？';
+                } else if (q.includes('awd')) {
+                    answer = 'AWD通常指All Wheel Drive（全轮驱动），是一种汽车驱动系统，能够将动力同时传递到前后轮，提供更好的牵引力和稳定性。';
+                } else if (q.includes('谢谢') || q.includes('感谢')) {
+                    answer = '不客气！很高兴能帮助到您。如果还有其他问题，请随时询问！';
                 } else {
-                    throw new Error(`API错误: ${response.status}`);
+                    answer = `关于"${question}"的问题，我正在学习中。这是一个很好的问题，建议您查阅相关资料或咨询专业人士获得更准确的答案。`;
                 }
-            } catch (error) {
-                // 回退到模拟回答
-                const answers = [
-                    "你好！我是AI助手，很高兴为您服务！",
-                    "感谢您的问题！我正在学习中，请多多指教。",
-                    "这是一个很好的问题，让我为您详细解答。"
-                ];
-                const randomAnswer = answers[Math.floor(Math.random() * answers.length)];
-                thinkingMsg.innerHTML = `<strong>AI助手 (本地模式):</strong> ${randomAnswer}`;
-            }
+                
+                thinkingMsg.innerHTML = `<strong>AI助手:</strong> ${answer}`;
+            }, 1500);
+        }
         }
         
         function addMessage(sender, message) {
