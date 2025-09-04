@@ -344,9 +344,37 @@
             addMessage('user', question);
             questionInput.value = '';
             
-            // 简化AI回答 - 直接使用本地智能回答
+            // 尝试调用真实AI API
             const thinkingMsg = addMessage('bot', '🤖 AI正在思考...');
             
+            try {
+                // 使用GitHub Models API
+                const response = await fetch('https://models.github.ai/inference/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/vnd.github+json',
+                        'Authorization': 'Bearer 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',
+                        'X-GitHub-Api-Version': '2022-11-28',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'openai/gpt-4o-mini',
+                        messages: [{role: 'user', content: question}],
+                        max_tokens: 500
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const answer = data.choices[0].message.content;
+                    thinkingMsg.innerHTML = `<strong>AI助手 (GitHub Models):</strong> ${answer}`;
+                    return;
+                }
+            } catch (error) {
+                console.log('API调用失败，使用本地回答:', error);
+            }
+            
+            // 回退到本地智能回答
             setTimeout(() => {
                 let answer = '';
                 const q = question.toLowerCase();
@@ -361,8 +389,8 @@
                     answer = `关于"${question}"的问题，我正在学习中。这是一个很好的问题，建议您查阅相关资料或咨询专业人士获得更准确的答案。`;
                 }
                 
-                thinkingMsg.innerHTML = `<strong>AI助手:</strong> ${answer}`;
-            }, 1500);
+                thinkingMsg.innerHTML = `<strong>AI助手 (本地模式):</strong> ${answer}`;
+            }, 1000);
         }
         }
         
