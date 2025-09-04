@@ -778,14 +778,16 @@
                 
                 // 先尝试GitHub Models API
                 try {
-                    const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+                    const response = await fetch('https://models.github.ai/inference/chat/completions', {
                         method: 'POST',
                         headers: {
+                            'Accept': 'application/vnd.github+json',
                             'Authorization': 'Bearer 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',
+                            'X-GitHub-Api-Version': '2022-11-28',
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            model: 'gpt-4o-mini',
+                            model: 'openai/gpt-4o-mini',
                             messages: [{role: 'user', content: question}],
                             max_tokens: 500
                         })
