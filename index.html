@@ -344,18 +344,20 @@
             addMessage('user', question);
             questionInput.value = '';
             
-            // 使用GitHub Models API（新token）
+            // 使用GitHub Models API（正确端点）
             const thinkingMsg = addMessage('bot', '🤖 AI正在思考...');
             
             try {
-                const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+                const response = await fetch('https://models.github.ai/inference/chat/completions', {
                     method: 'POST',
                     headers: {
+                        'Accept': 'application/vnd.github+json',
                         'Authorization': 'Bearer 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',
+                        'X-GitHub-Api-Version': '2022-11-28',
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: 'gpt-4o-mini',
+                        model: 'openai/gpt-4o-mini',
                         messages: [{role: 'user', content: question}],
                         max_tokens: 500
                     })
