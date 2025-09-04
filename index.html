@@ -110,6 +110,8 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            max-width: 70%;
+            margin: 0 auto;
         }
         
         .status-bar {
@@ -232,7 +234,6 @@
         <div class="header">
             <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶</button>
             <h1>AI Logistics Knowledge Agent</h1>
-            <p>智能物流知识助手 - 基于先进AI技术</p>
         </div>
         
         <div class="nav-buttons">
@@ -244,10 +245,6 @@
         </div>
         
         <div class="chat-container">
-            <div class="status-bar">
-                🔄 正在检测API连接状态...
-            </div>
-            
             <div class="chat-box" id="chatBox">
                 <div class="welcome-message">
                     👋 <strong>你好！我是AI知识助手</strong>，可以回答seller facing的物流专业问题，请问有什么可以帮助您的呢？
