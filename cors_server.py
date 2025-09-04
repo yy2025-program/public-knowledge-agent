@@ -7,10 +7,10 @@ import requests
 from datetime import datetime
 
 # API配置
-FIRECRAWL_API_KEY = "fc-b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8"
-GITHUB_API_KEY = "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"
+FIRECRAWL_API_KEY = "your_firecrawl_key_here"
+GITHUB_API_KEY = "your_github_token_here"
 GITHUB_API_URL = "https://models.github.ai/inference/chat/completions"
-SILICONFLOW_API_KEY = "sk-jjhtgselzbsadzvxtqfiqeajhznfrxbqlwdaglorelklxzqf"
+SILICONFLOW_API_KEY = "your_siliconflow_key_here"
 SILICONFLOW_API_URL = "https://api.siliconflow.cn/v1/chat/completions"
 
 articles_db = []
