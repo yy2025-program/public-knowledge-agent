@@ -777,30 +777,9 @@
                 let answer;
                 
                 if (useRealAPI) {
-                    // 使用智能回答生成器
-                    if (window.SmartAnswerGenerator && smartAnswerGenerator) {
-                        console.log('使用智能回答生成器');
-                        addMessage('bot', `🤖 AI正在分析您的问题...`);
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                        
-                        const result = await smartAnswerGenerator.generateAnswer(question);
-                        answer = result.answer;
-                        
-                        // 显示置信度和来源信息
-                        if (result.confidence > 0.7) {
-                            answer += `\n\n*回答置信度: ${Math.round(result.confidence * 100)}%*`;
-                        }
-                        
-                    } else if (useGitHubModels && githubModelsAI) {
-                        console.log('使用GitHub Models AI回答');
-                        answer = await generateGitHubModelsAnswer(question, searchCrawledKnowledge(question));
-                    } else if (useBedrockAI && bedrockAI) {
-                        console.log('使用Bedrock AI回答');
-                        answer = await generateBedrockAnswer(question, searchCrawledKnowledge(question));
-                    } else {
-                        console.log('使用本地智能问答');
-                        answer = generateSmartAnswer(question);
-                    }
+                    // 直接使用本地智能问答（避免外部依赖）
+                    console.log('使用本地智能问答');
+                    answer = generateSmartAnswer(question);
                 } else {
                     // 离线模式
                     await new Promise(resolve => setTimeout(resolve, 500));
@@ -860,6 +839,21 @@
 
         function generateSmartAnswer(question) {
             const questionLower = question.toLowerCase();
+            
+            // 简单快速回答（优先级最高）
+            if (questionLower.includes('你好') || questionLower.includes('hello')) {
+                return '你好！我是AI知识助手，很高兴为您服务！有什么可以帮助您的吗？';
+            }
+            
+            if (questionLower.includes('awd') || questionLower.includes('全轮驱动')) {
+                return 'AWD（All Wheel Drive）是全轮驱动系统，能够将动力同时传递到前后轮，提供更好的牵引力和稳定性，特别适合在雨雪天气或复杂路况下行驶。';
+            }
+            
+            if (questionLower.includes('谢谢') || questionLower.includes('感谢')) {
+                return '不客气！很高兴能帮助到您。如果还有其他问题，请随时询问！';
+            }
+            
+            // 原有复杂逻辑继续...
             
             // 首先搜索FireCrawl爬取的知识库
             const crawledResults = searchCrawledKnowledge(question);
