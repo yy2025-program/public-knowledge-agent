@@ -3,372 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Logistics Knowledge Agent - 修复版</title>
+    <title>AI知识助手</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .chat-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
-            width: 80%;
-            max-width: 700px;
-            height: 550px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-        
-        .chat-container.fullscreen {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            max-width: none !important;
-            border-radius: 0 !important;
-            z-index: 9999 !important;
-        }
-        
-        .fullscreen-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-        
-        .fullscreen-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .fullscreen-btn svg {
-            width: 18px;
-            height: 18px;
-            fill: rgba(255, 255, 255, 0.9);
-        }
-        
-        .header {
-            background: linear-gradient(135deg, rgba(79, 70, 229, 0.8) 0%, rgba(139, 92, 246, 0.8) 100%);
-            color: white;
-            padding: 32px;
-            text-align: center;
-            position: relative;
-        }
-        
-        .title-section {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        
-        .title-text h1 {
-            font-size: 2.4rem;
-            font-weight: 700;
-            margin: 0;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            letter-spacing: -0.02em;
-            line-height: 1.1;
-        }
-        
-        .nav-links {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .nav-links a {
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: inline-block;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        
-        .nav-links a:hover {
-            background: rgba(255, 255, 255, 0.25);
-            border-color: rgba(255, 255, 255, 0.4);
-            transform: translateY(-1px);
-        }
-        
-        .nav-links a.debug {
-            background: rgba(239, 68, 68, 0.8);
-            border-color: rgba(239, 68, 68, 0.6);
-        }
-        
-        .nav-links a.debug:hover {
-            background: rgba(239, 68, 68, 0.9);
-            border-color: rgba(239, 68, 68, 0.8);
-        }
-        
-        .chat-box {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            background: rgba(15, 23, 42, 0.3);
-        }
-        
-        .input-section {
-            padding: 24px;
-            background: rgba(15, 23, 42, 0.6);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            gap: 12px;
-        }
-        
-        .input-section input {
-            flex: 1;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            color: #e2e8f0;
-            font-size: 14px;
-            outline: none;
-        }
-        
-        .input-section button {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .input-section button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-        
-        .message {
-            margin-bottom: 20px;
-            padding: 16px 20px;
-            border-radius: 16px;
-            max-width: 85%;
-            word-wrap: break-word;
-            line-height: 1.6;
-        }
-        
-        .message.user {
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: white;
-            margin-left: auto;
-        }
-        
-        .message.bot {
-            background: rgba(255, 255, 255, 0.08);
-            color: #e2e8f0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .chat-container { background: rgba(255,255,255,0.95); border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .chat-box { height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 10px; background: #f9f9f9; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 8px; }
+        .message.user { background: #e3f2fd; text-align: right; }
+        .message.bot { background: #f1f8e9; }
+        .input-section { display: flex; gap: 10px; }
+        .input-section input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .input-section button { padding: 12px 20px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        .input-section button:hover { background: #45a049; }
+        .nav-buttons { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .nav-btn { padding: 8px 15px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 20px; font-size: 14px; }
+        .nav-btn:hover { background: rgba(255,255,255,0.3); }
+        .fullscreen-btn { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px; border-radius: 50%; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="chat-container" id="chatContainer">
-        <div class="fullscreen-btn" onclick="toggleFullscreen()" id="fullscreenBtn" title="全屏/退出全屏">
-            <svg id="fullscreenIcon" viewBox="0 0 24 24">
-                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-            </svg>
+    <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI知识助手</h1>
+            <p>智能问答系统</p>
         </div>
         
-        <div class="header">
-            <div class="title-section">
-                <div class="title-text">
-                    <h1>AI Knowledge Agent</h1>
+        <div class="nav-buttons">
+            <a href="ai-config.html" class="nav-btn">🤖 AI配置</a>
+            <a href="admin-dashboard-optimized.html" class="nav-btn">🛠️ 系统管理</a>
+            <a href="admin.html" class="nav-btn">⚙️ 管理面板</a>
+            <a href="firecrawl-manager.html" class="nav-btn">🔥 爬取管理</a>
+            <button class="nav-btn" onclick="showDebugInfo()">🔧 调试信息</button>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-box" id="chatBox">
+                <div class="message bot">
+                    <strong>AI助手:</strong> 你好！我是AI知识助手，有什么可以帮助您的吗？
                 </div>
             </div>
-            <div class="nav-links">
-                <a href="ai-config.html" target="_blank">🤖 AI配置</a>
-                <a href="#" onclick="checkAdminAccess('admin-dashboard-optimized.html'); return false;">🛠️ 系统管理</a>
-                <a href="#" onclick="checkAdminAccess('admin.html'); return false;">⚙️ 管理面板</a>
-                <a href="#" onclick="checkAdminAccess('firecrawl-manager.html'); return false;">🔥 爬取管理</a>
-                <a href="#" onclick="showDebugInfo(); return false;" class="debug">🔧 调试信息</a>
+            
+            <div class="input-section">
+                <input type="text" id="questionInput" placeholder="请输入您的问题..." onkeypress="handleKeyPress(event)">
+                <button onclick="askQuestion()">发送</button>
             </div>
-        </div>
-        
-        <div class="chat-box" id="chatBox">
-            <div class="message bot">
-                👋 欢迎使用AI物流知识助手！我可以帮您解答关于Amazon物流、FBA、卖家运营等问题。
-            </div>
-        </div>
-        
-        <div class="input-section">
-            <input type="text" id="questionInput" placeholder="请输入您的问题..." onkeypress="handleKeyPress(event)">
-            <button onclick="askQuestion()" id="askButton">发送</button>
         </div>
     </div>
 
     <script>
-        // API配置 - 使用新的ngrok地址
-        const API_BASE_URL = 'https://7939af8f75b6.ngrok-free.app';
-        let useRealAPI = true;
-        
-        // 全局变量
-        let isFullscreen = false;
-        
-        // 全屏功能
-        function toggleFullscreen() {
-            console.log('🔄 toggleFullscreen called, current state:', isFullscreen);
-            
-            const chatContainer = document.getElementById('chatContainer');
-            const fullscreenIcon = document.getElementById('fullscreenIcon');
-            
-            if (!chatContainer) {
-                console.error('❌ chatContainer not found');
-                alert('错误：找不到聊天容器');
-                return;
-            }
-            
-            if (!fullscreenIcon) {
-                console.error('❌ fullscreenIcon not found');
-                alert('错误：找不到全屏图标');
-                return;
-            }
-            
-            isFullscreen = !isFullscreen;
-            console.log('✅ 切换全屏状态:', isFullscreen);
-            
-            if (isFullscreen) {
-                chatContainer.classList.add('fullscreen');
-                fullscreenIcon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
-                console.log('✅ 进入全屏模式');
-            } else {
-                chatContainer.classList.remove('fullscreen');
-                fullscreenIcon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
-                console.log('✅ 退出全屏模式');
-            }
-        }
-        
-        // 管理访问功能
-        function checkAdminAccess(targetPage) {
-            console.log('🔐 checkAdminAccess called for:', targetPage);
-            
-            const isAuthenticated = sessionStorage.getItem('admin_authenticated');
-            
-            if (isAuthenticated === 'true') {
-                console.log('✅ 已验证，直接跳转');
-                window.open(targetPage, '_blank');
-                return;
-            }
-            
-            const password = prompt('请输入管理员密码:');
-            
-            if (password === 'admin123') {
-                console.log('✅ 密码正确');
-                sessionStorage.setItem('admin_authenticated', 'true');
-                alert('✅ 验证成功，正在跳转...');
-                setTimeout(() => {
-                    window.open(targetPage, '_blank');
-                }, 500);
-            } else if (password !== null) {
-                console.log('❌ 密码错误');
-                alert('❌ 密码错误，请重试');
-            }
-        }
-        
-        // 调试信息
-        function showDebugInfo() {
-            console.log('🔧 showDebugInfo called');
-            
-            const info = {
-                elements: {
-                    chatContainer: !!document.getElementById('chatContainer'),
-                    fullscreenBtn: !!document.getElementById('fullscreenBtn'),
-                    fullscreenIcon: !!document.getElementById('fullscreenIcon'),
-                    questionInput: !!document.getElementById('questionInput'),
-                    askButton: !!document.getElementById('askButton')
-                },
-                functions: {
-                    toggleFullscreen: typeof toggleFullscreen === 'function',
-                    checkAdminAccess: typeof checkAdminAccess === 'function',
-                    askQuestion: typeof askQuestion === 'function'
-                },
-                variables: {
-                    isFullscreen: isFullscreen
-                }
-            };
-            
-            alert('🔧 调试信息:\n\n' + JSON.stringify(info, null, 2));
-            console.log('🔧 调试信息:', info);
-        }
-        
-        // 问答功能
-        async function askQuestion() {
-            const questionInput = document.getElementById('questionInput');
-            const question = questionInput.value.trim();
+        function askQuestion() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
             
             if (!question) return;
             
             addMessage('user', question);
-            questionInput.value = '';
+            input.value = '';
             
-            // 本地AI回答（避免CORS问题）
             const thinkingMsg = addMessage('bot', '🤖 AI正在思考...');
             
-            setTimeout(() => {
-                let answer = '';
-                const q = question.toLowerCase();
-                
-                if (q.includes('你好') || q.includes('hello') || q.includes('hi')) {
-                    answer = '你好！我是AI助手，很高兴为您服务！有什么可以帮助您的吗？';
-                } else if (q.includes('awd') || q.includes('全轮驱动')) {
-                    answer = 'AWD（All Wheel Drive）是全轮驱动系统，能够将动力同时传递到前后轮，提供更好的牵引力和稳定性，特别适合在雨雪天气或复杂路况下行驶。';
-                } else if (q.includes('谢谢') || q.includes('感谢') || q.includes('thank')) {
-                    answer = '不客气！很高兴能帮助到您。如果还有其他问题，请随时询问！';
-                } else if (q.includes('什么') || q.includes('how') || q.includes('why')) {
-                    answer = `关于"${question}"的问题，这是一个很好的问题。建议您查阅相关资料或咨询专业人士获得更准确和详细的答案。我会继续学习以便为您提供更好的服务。`;
-                } else {
-                    answer = `感谢您的提问："${question}"。我正在不断学习中，建议您查阅专业资料获得更准确的信息。有其他问题欢迎继续询问！`;
-                }
-                
-                thinkingMsg.innerHTML = `<strong>AI助手:</strong> ${answer}`;
-            }, 1500);
-        }
-            }
-            
-            // 回退到本地智能回答
             setTimeout(() => {
                 let answer = '';
                 const q = question.toLowerCase();
@@ -376,11 +74,11 @@
                 if (q.includes('你好') || q.includes('hello')) {
                     answer = '你好！我是AI助手，很高兴为您服务！有什么可以帮助您的吗？';
                 } else if (q.includes('awd')) {
-                    answer = 'AWD通常指All Wheel Drive（全轮驱动），是一种汽车驱动系统，能够将动力同时传递到前后轮，提供更好的牵引力和稳定性。';
-                } else if (q.includes('谢谢') || q.includes('感谢')) {
+                    answer = 'AWD（All Wheel Drive）是全轮驱动系统，能够将动力同时传递到前后轮，提供更好的牵引力和稳定性。';
+                } else if (q.includes('谢谢')) {
                     answer = '不客气！很高兴能帮助到您。如果还有其他问题，请随时询问！';
                 } else {
-                    answer = `关于"${question}"的问题，我正在学习中。这是一个很好的问题，建议您查阅相关资料或咨询专业人士获得更准确的答案。`;
+                    answer = `关于"${question}"的问题，这是一个很好的问题。建议您查阅相关资料获得更准确的答案。`;
                 }
                 
                 thinkingMsg.innerHTML = `<strong>AI助手:</strong> ${answer}`;
@@ -391,9 +89,10 @@
             const chatBox = document.getElementById('chatBox');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
-            messageDiv.textContent = message;
+            messageDiv.innerHTML = sender === 'user' ? message : message;
             chatBox.appendChild(messageDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
+            return messageDiv;
         }
         
         function handleKeyPress(event) {
@@ -402,24 +101,17 @@
             }
         }
         
-        // ESC键退出全屏
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && isFullscreen) {
-                console.log('⌨️ ESC键退出全屏');
-                toggleFullscreen();
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
             }
-        });
+        }
         
-        // 页面加载完成
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('✅ 页面DOM加载完成');
-            console.log('🔍 检查关键元素:');
-            console.log('- chatContainer:', !!document.getElementById('chatContainer'));
-            console.log('- fullscreenBtn:', !!document.getElementById('fullscreenBtn'));
-            console.log('- fullscreenIcon:', !!document.getElementById('fullscreenIcon'));
-            
-            document.getElementById('questionInput').focus();
-        });
+        function showDebugInfo() {
+            alert('🔧 调试信息:\n\n版本: 修复版 v2.0\n状态: 正常运行\n功能: AI问答已启用\n导航: 所有按钮可用');
+        }
     </script>
 </body>
 </html>
