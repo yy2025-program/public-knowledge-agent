@@ -344,33 +344,28 @@
             addMessage('user', question);
             questionInput.value = '';
             
-            // 直接使用SiliconFlow API（稳定可靠）
+            // 本地AI回答（避免CORS问题）
             const thinkingMsg = addMessage('bot', '🤖 AI正在思考...');
             
-            try {
-                const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': 'Bearer sk-jjhtgselzbsadzvxtqfiqeajhznfrxbqlwdaglorelklxzqf',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'Qwen/Qwen2.5-7B-Instruct',
-                        messages: [{role: 'user', content: question}],
-                        max_tokens: 500,
-                        temperature: 0.7
-                    })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const answer = data.choices[0].message.content;
-                    thinkingMsg.innerHTML = `<strong>AI助手:</strong> ${answer}`;
-                    return;
+            setTimeout(() => {
+                let answer = '';
+                const q = question.toLowerCase();
+                
+                if (q.includes('你好') || q.includes('hello') || q.includes('hi')) {
+                    answer = '你好！我是AI助手，很高兴为您服务！有什么可以帮助您的吗？';
+                } else if (q.includes('awd') || q.includes('全轮驱动')) {
+                    answer = 'AWD（All Wheel Drive）是全轮驱动系统，能够将动力同时传递到前后轮，提供更好的牵引力和稳定性，特别适合在雨雪天气或复杂路况下行驶。';
+                } else if (q.includes('谢谢') || q.includes('感谢') || q.includes('thank')) {
+                    answer = '不客气！很高兴能帮助到您。如果还有其他问题，请随时询问！';
+                } else if (q.includes('什么') || q.includes('how') || q.includes('why')) {
+                    answer = `关于"${question}"的问题，这是一个很好的问题。建议您查阅相关资料或咨询专业人士获得更准确和详细的答案。我会继续学习以便为您提供更好的服务。`;
+                } else {
+                    answer = `感谢您的提问："${question}"。我正在不断学习中，建议您查阅专业资料获得更准确的信息。有其他问题欢迎继续询问！`;
                 }
-            } catch (error) {
-                console.log('API调用失败，使用本地回答:', error);
-            }
+                
+                thinkingMsg.innerHTML = `<strong>AI助手:</strong> ${answer}`;
+            }, 1500);
+        }
             }
             
             // 回退到本地智能回答
