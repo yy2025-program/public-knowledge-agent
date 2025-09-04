@@ -764,14 +764,12 @@
             
             if (!question) return;
 
-            // 禁用输入和按钮
-            questionInput.disabled = true;
-            document.getElementById('askButton').disabled = true;
-            document.getElementById('loading').style.display = 'block';
-
             // 显示用户问题
             addMessage('user', question);
             questionInput.value = '';
+            
+            // 显示思考状态
+            const thinkingMsg = addMessage('bot', '🤖 AI正在思考...');
 
             try {
                 // 使用SiliconFlow API
@@ -791,20 +789,14 @@
                 if (response.ok) {
                     const data = await response.json();
                     const answer = data.choices[0].message.content;
-                    addMessage('bot', `🤖 AI助手: ${answer}`);
+                    thinkingMsg.textContent = `🤖 AI助手: ${answer}`;
                 } else {
-                    addMessage('bot', generateSmartAnswer(question));
+                    thinkingMsg.textContent = `🤖 AI助手: ${generateSmartAnswer(question)}`;
                 }
                 
             } catch (error) {
                 console.error('AI调用失败:', error);
-                addMessage('bot', generateSmartAnswer(question));
-            } finally {
-                // 恢复输入状态
-                questionInput.disabled = false;
-                document.getElementById('askButton').disabled = false;
-                document.getElementById('loading').style.display = 'none';
-                questionInput.focus();
+                thinkingMsg.textContent = `🤖 AI助手: ${generateSmartAnswer(question)}`;
             }
         }
                     }
