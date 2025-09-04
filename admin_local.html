@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI知识代理 - 管理面板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #ddd;
+        }
+
+        .status-item.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+
+        .status-item.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+
+        .status-item h3 {
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+
+        .status-item p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .result-area {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #e1e5e9;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result-area pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .api-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .api-info h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .api-info p {
+            color: #424242;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI知识代理管理面板</h1>
+            <p>管理您的AI知识库、爬虫和数据同步</p>
+        </div>
+
+        <!-- API连接信息 -->
+        <div class="card">
+            <h2>🔗 API连接信息</h2>
+            <div class="api-info">
+                <h3>本地API服务器</h3>
+                <p><strong>地址:</strong> http://localhost:3000</p>
+                <p><strong>状态:</strong> <span id="serverStatus">检查中...</span></p>
+                <p><strong>FireCrawl API:</strong> 已配置</p>
+                <p><strong>AI API:</strong> 已配置 (SiliconFlow)</p>
+            </div>
+        </div>
+
+        <!-- API状态检查 -->
+        <div class="card">
+            <h2>📊 系统状态</h2>
+            <div class="status-grid" id="statusGrid">
+                <div class="status-item" id="askStatus">
+                    <h3>❌ Ask API: 检查中...</h3>
+                    <p>AI问答服务状态</p>
+                </div>
+                <div class="status-item" id="crawlStatus">
+                    <h3>❌ Crawl API: 检查中...</h3>
+                    <p>网页爬取服务状态</p>
+                </div>
+                <div class="status-item" id="dbStatus">
+                    <h3>❌ Database API: 检查中...</h3>
+                    <p>数据库服务状态</p>
+                </div>
+            </div>
+            <button class="btn" onclick="checkSystemStatus()">🔄 重新检查状态</button>
+        </div>
+
+        <div class="grid-2">
+            <!-- 网页爬取 -->
+            <div class="card">
+                <h2>🕷️ 网页爬取</h2>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="useFirecrawl" checked>
+                    <label for="useFirecrawl">使用FireCrawl (已配置API密钥)</label>
+                </div>
+                
+                <div class="form-group">
+                    <label for="crawlUrl">网页URL:</label>
+                    <input type="url" id="crawlUrl" placeholder="https://example.com">
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="autoStore">
+                    <label for="autoStore">自动存储到数据库</label>
+                </div>
+                
+                <button class="btn" onclick="crawlWebsite()">🚀 开始爬取</button>
+                <button class="btn btn-secondary" onclick="clearCrawlResults()">🗑️ 清空结果</button>
+                
+                <div class="result-area" id="crawlResults" style="display: none;">
+                    <pre id="crawlOutput"></pre>
+                </div>
+            </div>
+
+            <!-- 数据库管理 -->
+            <div class="card">
+                <h2>🗄️ 数据库管理</h2>
+                
+                <div class="form-group">
+                    <label for="dbAction">操作类型:</label>
+                    <select id="dbAction">
+                        <option value="test_connection">测试连接</option>
+                        <option value="search_articles">搜索文章</option>
+                        <option value="store_article">存储文章</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="searchGroup">
+                    <label for="searchQuery">搜索关键词:</label>
+                    <input type="text" id="searchQuery" placeholder="输入搜索关键词">
+                </div>
+                
+                <div class="form-group" id="storeGroup" style="display: none;">
+                    <label for="articleTitle">文章标题:</label>
+                    <input type="text" id="articleTitle" placeholder="文章标题">
+                    <label for="articleContent">文章内容:</label>
+                    <textarea id="articleContent" rows="4" placeholder="文章内容"></textarea>
+                    <label for="articleUrl">文章URL:</label>
+                    <input type="url" id="articleUrl" placeholder="https://example.com">
+                </div>
+                
+                <button class="btn" onclick="executeDbOperation()">📊 执行操作</button>
+                <button class="btn btn-secondary" onclick="clearDbResults()">🗑️ 清空结果</button>
+                
+                <div class="result-area" id="dbResults" style="display: none;">
+                    <pre id="dbOutput"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI问答测试 -->
+        <div class="card">
+            <h2>🤖 AI问答测试</h2>
+            <div class="checkbox-group">
+                <input type="checkbox" id="useAI" checked>
+                <label for="useAI">使用AI增强 (已配置API密钥)</label>
+            </div>
+            
+            <div class="form-group">
+                <label for="testQuestion">测试问题:</label>
+                <input type="text" id="testQuestion" placeholder="输入您的问题" value="什么是人工智能？">
+            </div>
+            
+            <button class="btn" onclick="testAIQuestion()">💬 提问</button>
+            <button class="btn btn-secondary" onclick="clearAIResults()">🗑️ 清空结果</button>
+            
+            <div class="result-area" id="aiResults" style="display: none;">
+                <pre id="aiOutput"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000';
+
+        // 页面加载时检查系统状态
+        window.onload = function() {
+            checkSystemStatus();
+            
+            // 监听数据库操作类型变化
+            document.getElementById('dbAction').addEventListener('change', function() {
+                const action = this.value;
+                const searchGroup = document.getElementById('searchGroup');
+                const storeGroup = document.getElementById('storeGroup');
+                
+                if (action === 'search_articles') {
+                    searchGroup.style.display = 'block';
+                    storeGroup.style.display = 'none';
+                } else if (action === 'store_article') {
+                    searchGroup.style.display = 'none';
+                    storeGroup.style.display = 'block';
+                } else {
+                    searchGroup.style.display = 'none';
+                    storeGroup.style.display = 'none';
+                }
+            });
+        };
+
+        // 检查系统状态
+        async function checkSystemStatus() {
+            document.getElementById('serverStatus').textContent = '检查中...';
+            
+            try {
+                // 检查各个API端点
+                const endpoints = [
+                    { name: 'Ask API', url: '/api/ask', id: 'askStatus' },
+                    { name: 'Crawl API', url: '/api/crawl', id: 'crawlStatus' },
+                    { name: 'Database API', url: '/api/database', id: 'dbStatus' }
+                ];
+
+                let allSuccess = true;
+
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}${endpoint.url}`);
+                        const data = await response.json();
+                        
+                        const statusElement = document.getElementById(endpoint.id);
+                        if (response.ok && data.status === 'ok') {
+                            statusElement.className = 'status-item success';
+                            statusElement.querySelector('h3').textContent = `✅ ${endpoint.name}: 连接成功`;
+                        } else {
+                            statusElement.className = 'status-item error';
+                            statusElement.querySelector('h3').textContent = `❌ ${endpoint.name}: 连接失败`;
+                            allSuccess = false;
+                        }
+                    } catch (error) {
+                        const statusElement = document.getElementById(endpoint.id);
+                        statusElement.className = 'status-item error';
+                        statusElement.querySelector('h3').textContent = `❌ ${endpoint.name}: 连接失败`;
+                        allSuccess = false;
+                    }
+                }
+
+                document.getElementById('serverStatus').textContent = allSuccess ? '✅ 正常运行' : '❌ 部分服务异常';
+                
+            } catch (error) {
+                document.getElementById('serverStatus').textContent = '❌ 连接失败';
+                console.error('Status check error:', error);
+            }
+        }
+
+        // 爬取网站
+        async function crawlWebsite() {
+            const url = document.getElementById('crawlUrl').value;
+            const autoStore = document.getElementById('autoStore').checked;
+            
+            if (!url) {
+                alert('请输入网页URL');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('crawlResults');
+            const outputDiv = document.getElementById('crawlOutput');
+            
+            resultsDiv.style.display = 'block';
+            outputDiv.textContent = '正在爬取网页...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/crawl`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: url})
+                });
+
+                const data = await response.json();
+                outputDiv.textContent = JSON.stringify(data, null, 2);
+
+                // 如果启用自动存储且爬取成功
+                if (autoStore && data.success) {
+                    try {
+                        const storeResponse = await fetch(`${API_BASE_URL}/api/database`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                action: 'store_article',
+                                title: data.title,
+                                content: data.content,
+                                url: data.url
+                            })
+                        });
+                        
+                        const storeData = await storeResponse.json();
+                        outputDiv.textContent += '\n\n=== 自动存储结果 ===\n' + JSON.stringify(storeData, null, 2);
+                    } catch (storeError) {
+                        outputDiv.textContent += '\n\n=== 自动存储失败 ===\n' + storeError.message;
+                    }
+                }
+
+            } catch (error) {
+                outputDiv.textContent = '爬取失败: ' + error.message;
+            }
+        }
+
+        // 执行数据库操作
+        async function executeDbOperation() {
+            const action = document.getElementById('dbAction').value;
+            const resultsDiv = document.getElementById('dbResults');
+            const outputDiv = document.getElementById('dbOutput');
+            
+            resultsDiv.style.display = 'block';
+            outputDiv.textContent = '正在执行操作...';
+
+            let requestData = {action: action};
+
+            if (action === 'search_articles') {
+                requestData.query = document.getElementById('searchQuery').value;
+            } else if (action === 'store_article') {
+                requestData.title = document.getElementById('articleTitle').value;
+                requestData.content = document.getElementById('articleContent').value;
+                requestData.url = document.getElementById('articleUrl').value;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/database`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+                outputDiv.textContent = JSON.stringify(data, null, 2);
+
+            } catch (error) {
+                outputDiv.textContent = '操作失败: ' + error.message;
+            }
+        }
+
+        // 测试AI问答
+        async function testAIQuestion() {
+            const question = document.getElementById('testQuestion').value;
+            
+            if (!question) {
+                alert('请输入问题');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('aiResults');
+            const outputDiv = document.getElementById('aiOutput');
+            
+            resultsDiv.style.display = 'block';
+            outputDiv.textContent = '正在处理问题...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ask`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({question: question})
+                });
+
+                const data = await response.json();
+                outputDiv.textContent = JSON.stringify(data, null, 2);
+
+            } catch (error) {
+                outputDiv.textContent = '问答失败: ' + error.message;
+            }
+        }
+
+        // 清空结果函数
+        function clearCrawlResults() {
+            document.getElementById('crawlResults').style.display = 'none';
+        }
+
+        function clearDbResults() {
+            document.getElementById('dbResults').style.display = 'none';
+        }
+
+        function clearAIResults() {
+            document.getElementById('aiResults').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI助手测试页面</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .card { background: #f5f5f5; padding: 20px; margin: 10px 0; border-radius: 8px; }
+        .status { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        input, textarea { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
+        .result { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>🤖 AI助手测试页面</h1>
+    
+    <div class="card">
+        <h2>🔗 连接测试</h2>
+        <p>API地址: <strong>https://388369108e2c.ngrok-free.app</strong></p>
+        <button class="btn" onclick="testConnection()">测试连接</button>
+        <div id="connectionStatus"></div>
+    </div>
+
+    <div class="card">
+        <h2>💬 AI问答测试</h2>
+        <input type="text" id="question" placeholder="输入问题" value="你好">
+        <button class="btn" onclick="testAI()">提问</button>
+        <div id="aiResult" class="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://388369108e2c.ngrok-free.app';
+
+        async function testConnection() {
+            const status = document.getElementById('connectionStatus');
+            status.innerHTML = '<div class="status">正在测试连接...</div>';
+
+            try {
+                console.log('测试地址:', `${API_BASE_URL}/health`);
+                
+                const response = await fetch(`${API_BASE_URL}/health`, {
+                    headers: {
+                        'ngrok-skip-browser-warning': 'true'
+                    }
+                });
+                
+                console.log('响应状态:', response.status);
+                const data = await response.json();
+                console.log('响应数据:', data);
+                
+                if (response.ok && data.status === 'healthy') {
+                    status.innerHTML = '<div class="status success">✅ 连接成功！所有服务正常运行</div>';
+                } else {
+                    status.innerHTML = '<div class="status error">❌ 连接失败：服务异常</div>';
+                }
+            } catch (error) {
+                console.error('连接错误:', error);
+                status.innerHTML = `<div class="status error">❌ 连接失败：${error.message}</div>`;
+            }
+        }
+
+        async function testAI() {
+            const question = document.getElementById('question').value;
+            const result = document.getElementById('aiResult');
+            
+            if (!question) return alert('请输入问题');
+            
+            result.style.display = 'block';
+            result.textContent = '🤔 AI正在思考...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ask`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    body: JSON.stringify({question})
+                });
+
+                const data = await response.json();
+                console.log('AI响应:', data);
+                
+                result.textContent = `问题: ${question}\n\n回答: ${data.answer}\n\nAPI: ${data.api_used || '未知'}\n来源: ${data.sources ? data.sources.join(', ') : '未知'}`;
+            } catch (error) {
+                console.error('AI错误:', error);
+                result.textContent = `❌ AI服务失败: ${error.message}`;
+            }
+        }
+
+        // 页面加载时自动测试
+        window.onload = testConnection;
+    </script>
+</body>
+</html>

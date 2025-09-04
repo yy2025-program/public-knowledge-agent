@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI知识助手</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .api-config { background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; margin-right: 10px; }
+        .btn:hover { transform: translateY(-2px); }
+        .tabs { display: flex; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; background: #e9ecef; border: none; cursor: pointer; margin-right: 5px; border-radius: 5px; }
+        .tab.active { background: #667eea; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .result { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin-top: 15px; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+        .status { padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+        .status.success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .status.error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI知识助手</h1>
+            <p>智能问答 · 网页爬取 · 知识搜索</p>
+        </div>
+
+        <!-- API配置 -->
+        <div class="card">
+            <h2>🔗 API配置</h2>
+            <div class="api-config">
+                <div class="form-group">
+                    <label>API服务器地址:</label>
+                    <input type="url" id="apiUrl" value="https://388369108e2c.ngrok-free.app" placeholder="输入API地址">
+                    <button class="btn" onclick="testConnection()" style="margin-top: 10px;">🔄 测试连接</button>
+                </div>
+                <div id="connectionStatus" class="status" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- 功能选项卡 -->
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('ask')">💬 AI问答</button>
+                <button class="tab" onclick="showTab('crawl')">🕷️ 网页爬取</button>
+                <button class="tab" onclick="showTab('search')">🔍 知识搜索</button>
+            </div>
+
+            <!-- AI问答 -->
+            <div id="ask" class="tab-content active">
+                <div class="form-group">
+                    <label>请输入您的问题:</label>
+                    <input type="text" id="question" placeholder="例如：什么是人工智能？" onkeypress="if(event.key==='Enter') askQuestion()">
+                </div>
+                <button class="btn" onclick="askQuestion()">💬 提问</button>
+                <div id="askResult" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- 网页爬取 -->
+            <div id="crawl" class="tab-content">
+                <div class="form-group">
+                    <label>网页URL:</label>
+                    <input type="url" id="crawlUrl" placeholder="https://example.com" onkeypress="if(event.key==='Enter') crawlPage()">
+                </div>
+                <button class="btn" onclick="crawlPage()">🚀 爬取</button>
+                <div id="crawlResult" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- 知识搜索 -->
+            <div id="search" class="tab-content">
+                <div class="form-group">
+                    <label>搜索关键词:</label>
+                    <input type="text" id="searchQuery" placeholder="输入搜索关键词" onkeypress="if(event.key==='Enter') searchKnowledge()">
+                </div>
+                <button class="btn" onclick="searchKnowledge()">🔍 搜索</button>
+                <div id="searchResult" class="result" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="card">
+            <h2>📖 使用说明</h2>
+            <div class="grid">
+                <div>
+                    <h3>💬 AI问答</h3>
+                    <p>输入任何问题，AI会为您提供智能回答。支持中英文问答，涵盖各种知识领域。</p>
+                </div>
+                <div>
+                    <h3>🕷️ 网页爬取</h3>
+                    <p>输入网页URL，自动提取网页内容。支持大部分网站，自动过滤广告和无关内容。</p>
+                </div>
+                <div>
+                    <h3>🔍 知识搜索</h3>
+                    <p>搜索已存储的知识库内容。爬取的网页内容会自动存储，方便后续搜索。</p>
+                </div>
+                <div>
+                    <h3>🔗 API配置</h3>
+                    <p>默认已配置ngrok地址。如果连接失败，请检查API服务器是否正常运行。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let API_BASE_URL = 'https://388369108e2c.ngrok-free.app';
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        async function testConnection() {
+            const url = document.getElementById('apiUrl').value;
+            const status = document.getElementById('connectionStatus');
+            
+            if (!url) {
+                showStatus('请输入API地址', 'error');
+                return;
+            }
+
+            API_BASE_URL = url.replace(/\/$/, '');
+            status.style.display = 'block';
+            status.textContent = '正在测试连接...';
+            status.className = 'status';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                
+                if (response.ok && data.status === 'healthy') {
+                    showStatus('✅ 连接成功！所有服务正常运行', 'success');
+                } else {
+                    showStatus('❌ 连接失败：服务异常', 'error');
+                }
+            } catch (error) {
+                showStatus('❌ 连接失败：无法访问API服务器', 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('connectionStatus');
+            status.style.display = 'block';
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        async function askQuestion() {
+            const question = document.getElementById('question').value;
+            if (!question) return alert('请输入问题');
+            
+            const result = document.getElementById('askResult');
+            result.style.display = 'block';
+            result.textContent = '🤔 AI正在思考...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ask`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({question})
+                });
+                const data = await response.json();
+                
+                result.textContent = `问题：${question}\n\n回答：${data.answer || '抱歉，无法回答这个问题'}\n\n来源：${data.sources ? data.sources.join(', ') : '未知'}`;
+            } catch (error) {
+                result.textContent = '❌ 服务暂时不可用，请稍后再试';
+            }
+        }
+
+        async function crawlPage() {
+            const url = document.getElementById('crawlUrl').value;
+            if (!url) return alert('请输入网页URL');
+            
+            const result = document.getElementById('crawlResult');
+            result.style.display = 'block';
+            result.textContent = '🕷️ 正在爬取网页...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/crawl`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url})
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    result.textContent = `网页：${url}\n标题：${data.title}\n爬取时间：${data.scraped_at}\n\n内容：\n${data.content}`;
+                } else {
+                    result.textContent = `❌ 爬取失败：${data.message || '未知错误'}`;
+                }
+            } catch (error) {
+                result.textContent = '❌ 爬取失败，请检查URL是否正确';
+            }
+        }
+
+        async function searchKnowledge() {
+            const query = document.getElementById('searchQuery').value;
+            if (!query) return alert('请输入搜索关键词');
+            
+            const result = document.getElementById('searchResult');
+            result.style.display = 'block';
+            result.textContent = '🔍 正在搜索...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/database`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: 'search_articles', query})
+                });
+                const data = await response.json();
+                
+                if (data.success && data.articles && data.articles.length > 0) {
+                    const results = data.articles.map(article => 
+                        `标题：${article.title}\n内容：${article.content}\nURL：${article.url}\n存储时间：${article.stored_at}\n${'='.repeat(50)}`
+                    ).join('\n');
+                    result.textContent = `搜索关键词：${query}\n找到 ${data.count} 条结果\n\n${results}`;
+                } else {
+                    result.textContent = `搜索关键词：${query}\n\n❌ 未找到相关内容\n\n提示：请先使用网页爬取功能添加一些内容到知识库`;
+                }
+            } catch (error) {
+                result.textContent = '❌ 搜索失败，请稍后再试';
+            }
+        }
+
+        // 页面加载时自动测试连接
+        window.onload = function() {
+            testConnection();
+        };
+    </script>
+</body>
+</html>

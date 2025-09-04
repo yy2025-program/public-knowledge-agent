@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI知识助手</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .chat-container { height: 400px; border: 1px solid #e1e5e9; border-radius: 10px; overflow-y: auto; padding: 15px; background: #f8f9fa; margin-bottom: 15px; }
+        .message { margin-bottom: 15px; padding: 10px; border-radius: 10px; }
+        .user-message { background: #007bff; color: white; margin-left: 20%; }
+        .ai-message { background: white; border: 1px solid #e1e5e9; margin-right: 20%; }
+        .input-group { display: flex; gap: 10px; }
+        .input-group input { flex: 1; padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; }
+        .btn:hover { transform: translateY(-2px); }
+        .status { padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .tabs { display: flex; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; background: #e9ecef; border: none; cursor: pointer; margin-right: 5px; border-radius: 5px; }
+        .tab.active { background: #667eea; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .result { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 5px; padding: 15px; margin-top: 15px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI知识助手</h1>
+            <p>智能问答 · 网页爬取 · 知识搜索</p>
+        </div>
+
+        <!-- API状态 -->
+        <div class="card">
+            <h2>🔗 系统状态</h2>
+            <div id="apiStatus" class="status">正在检查连接...</div>
+        </div>
+
+        <!-- 功能选项卡 -->
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('chat')">💬 AI问答</button>
+                <button class="tab" onclick="showTab('crawl')">🕷️ 网页爬取</button>
+                <button class="tab" onclick="showTab('search')">🔍 知识搜索</button>
+            </div>
+
+            <!-- AI问答 -->
+            <div id="chat" class="tab-content active">
+                <div class="chat-container" id="chatContainer">
+                    <div class="message ai-message">
+                        <strong>AI助手:</strong> 您好！我是AI知识助手，支持GitHub Models和SiliconFlow双API。请问有什么可以帮助您的吗？
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="questionInput" placeholder="输入您的问题..." onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button class="btn" onclick="sendMessage()">发送</button>
+                </div>
+            </div>
+
+            <!-- 网页爬取 -->
+            <div id="crawl" class="tab-content">
+                <div class="form-group">
+                    <label>网页URL:</label>
+                    <input type="url" id="crawlUrl" placeholder="https://example.com" onkeypress="if(event.key==='Enter') crawlPage()">
+                </div>
+                <button class="btn" onclick="crawlPage()">🚀 爬取</button>
+                <div id="crawlResult" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- 知识搜索 -->
+            <div id="search" class="tab-content">
+                <div class="form-group">
+                    <label>搜索关键词:</label>
+                    <input type="text" id="searchQuery" placeholder="输入搜索关键词" onkeypress="if(event.key==='Enter') searchKnowledge()">
+                </div>
+                <button class="btn" onclick="searchKnowledge()">🔍 搜索</button>
+                <div id="searchResult" class="result" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://388369108e2c.ngrok-free.app';
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        async function checkAPIStatus() {
+            const status = document.getElementById('apiStatus');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    status.className = 'status success';
+                    status.textContent = `✅ 系统正常运行 | 版本: ${data.version} | AI提供商: ${data.ai_providers.join(', ')}`;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ 连接失败: ${error.message}`;
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+            
+            if (!question) return;
+            
+            const chatContainer = document.getElementById('chatContainer');
+            
+            // 添加用户消息
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user-message';
+            userMessage.innerHTML = `<strong>您:</strong> ${question}`;
+            chatContainer.appendChild(userMessage);
+            
+            // 添加AI思考消息
+            const aiMessage = document.createElement('div');
+            aiMessage.className = 'message ai-message';
+            aiMessage.innerHTML = '<strong>AI助手:</strong> 🤔 正在思考...';
+            chatContainer.appendChild(aiMessage);
+            
+            // 清空输入框并滚动到底部
+            input.value = '';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ask`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    body: JSON.stringify({ question })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.answer) {
+                    aiMessage.innerHTML = `<strong>AI助手 (${data.api_used || 'Unknown'}):</strong> ${data.answer}`;
+                } else {
+                    aiMessage.innerHTML = '<strong>AI助手:</strong> ❌ 抱歉，无法回答这个问题。';
+                }
+            } catch (error) {
+                aiMessage.innerHTML = '<strong>AI助手:</strong> ❌ 网络错误，请稍后再试。';
+            }
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function crawlPage() {
+            const url = document.getElementById('crawlUrl').value;
+            if (!url) return alert('请输入网页URL');
+            
+            const result = document.getElementById('crawlResult');
+            result.style.display = 'block';
+            result.textContent = '🕷️ 正在爬取网页...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/crawl`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    result.textContent = `网页: ${url}\n标题: ${data.title}\n爬取时间: ${data.scraped_at}\n\n内容:\n${data.content}`;
+                } else {
+                    result.textContent = `❌ 爬取失败: ${data.message || '未知错误'}`;
+                }
+            } catch (error) {
+                result.textContent = '❌ 爬取失败，请检查URL是否正确';
+            }
+        }
+
+        async function searchKnowledge() {
+            const query = document.getElementById('searchQuery').value;
+            if (!query) return alert('请输入搜索关键词');
+            
+            const result = document.getElementById('searchResult');
+            result.style.display = 'block';
+            result.textContent = '🔍 正在搜索...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/database`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    body: JSON.stringify({ action: 'search_articles', query })
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.articles && data.articles.length > 0) {
+                    const results = data.articles.map(article => 
+                        `标题: ${article.title}\n内容: ${article.content}\nURL: ${article.url}\n存储时间: ${article.stored_at}\n${'='.repeat(50)}`
+                    ).join('\n');
+                    result.textContent = `搜索关键词: ${query}\n找到 ${data.count} 条结果\n\n${results}`;
+                } else {
+                    result.textContent = `搜索关键词: ${query}\n\n❌ 未找到相关内容\n\n提示: 请先使用网页爬取功能添加一些内容到知识库`;
+                }
+            } catch (error) {
+                result.textContent = '❌ 搜索失败，请稍后再试';
+            }
+        }
+
+        // 页面加载时检查API状态
+        window.onload = function() {
+            checkAPIStatus();
+            document.getElementById('questionInput').focus();
+        };
+    </script>
+</body>
+</html>
