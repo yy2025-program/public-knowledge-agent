@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI知识助手</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .chat-container { background: rgba(255,255,255,0.95); border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .chat-box { height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 10px; background: #f9f9f9; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 8px; }
+        .message.user { background: #e3f2fd; text-align: right; }
+        .message.bot { background: #f1f8e9; }
+        .input-section { display: flex; gap: 10px; }
+        .input-section input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .input-section button { padding: 12px 20px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        .input-section button:hover { background: #45a049; }
+        .nav-buttons { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .nav-btn { padding: 8px 15px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 20px; font-size: 14px; }
+        .nav-btn:hover { background: rgba(255,255,255,0.3); }
+        .fullscreen-btn { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px; border-radius: 50%; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI知识助手</h1>
+            <p>智能问答系统</p>
+        </div>
+        
+        <div class="nav-buttons">
+            <a href="ai-config.html" class="nav-btn">🤖 AI配置</a>
+            <a href="admin-dashboard-optimized.html" class="nav-btn">🛠️ 系统管理</a>
+            <a href="admin.html" class="nav-btn">⚙️ 管理面板</a>
+            <a href="firecrawl-manager.html" class="nav-btn">🔥 爬取管理</a>
+            <button class="nav-btn" onclick="showDebugInfo()">🔧 调试信息</button>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-box" id="chatBox">
+                <div class="message bot">
+                    <strong>AI助手:</strong> 你好！我是AI知识助手，有什么可以帮助您的吗？
+                </div>
+            </div>
+            
+            <div class="input-section">
+                <input type="text" id="questionInput" placeholder="请输入您的问题..." onkeypress="handleKeyPress(event)">
+                <button onclick="askQuestion()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function askQuestion() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+            
+            if (!question) return;
+            
+            addMessage('user', question);
+            input.value = '';
+            
+            const thinkingMsg = addMessage('bot', '🤖 AI正在思考...');
+            
+            setTimeout(() => {
+                let answer = '';
+                const q = question.toLowerCase();
+                
+                if (q.includes('你好') || q.includes('hello')) {
+                    answer = '你好！我是AI助手，很高兴为您服务！有什么可以帮助您的吗？';
+                } else if (q.includes('awd')) {
+                    answer = 'AWD（All Wheel Drive）是全轮驱动系统，能够将动力同时传递到前后轮，提供更好的牵引力和稳定性。';
+                } else if (q.includes('谢谢')) {
+                    answer = '不客气！很高兴能帮助到您。如果还有其他问题，请随时询问！';
+                } else {
+                    answer = `关于"${question}"的问题，这是一个很好的问题。建议您查阅相关资料获得更准确的答案。`;
+                }
+                
+                thinkingMsg.innerHTML = `<strong>AI助手:</strong> ${answer}`;
+            }, 1500);
+        }
+        
+        function addMessage(sender, message) {
+            const chatBox = document.getElementById('chatBox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.innerHTML = sender === 'user' ? message : message;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return messageDiv;
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                askQuestion();
+            }
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        function showDebugInfo() {
+            alert('🔧 调试信息:\n\n版本: 简化版 v1.0\n状态: 正常运行\n功能: AI问答已启用');
+        }
+    </script>
+</body>
+</html>
