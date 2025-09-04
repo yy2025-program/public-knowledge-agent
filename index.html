@@ -3,242 +3,409 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI知识助手</title>
+    <title>AI Logistics Knowledge Agent - 修复版</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        .header { text-align: center; color: white; margin-bottom: 30px; }
-        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
-        .card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .api-config { background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; }
-        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; }
-        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; margin-right: 10px; }
-        .btn:hover { transform: translateY(-2px); }
-        .tabs { display: flex; margin-bottom: 20px; }
-        .tab { padding: 10px 20px; background: #e9ecef; border: none; cursor: pointer; margin-right: 5px; border-radius: 5px; }
-        .tab.active { background: #667eea; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .result { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin-top: 15px; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
-        .status { padding: 10px; border-radius: 5px; margin-bottom: 15px; }
-        .status.success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
-        .status.error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chat-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
+            width: 80%;
+            max-width: 700px;
+            height: 550px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-container.fullscreen {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            border-radius: 0 !important;
+            z-index: 9999 !important;
+        }
+        
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .fullscreen-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .fullscreen-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: rgba(255, 255, 255, 0.9);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.8) 0%, rgba(139, 92, 246, 0.8) 100%);
+            color: white;
+            padding: 32px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .title-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .title-text h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+        
+        .nav-links {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-block;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .nav-links a.debug {
+            background: rgba(239, 68, 68, 0.8);
+            border-color: rgba(239, 68, 68, 0.6);
+        }
+        
+        .nav-links a.debug:hover {
+            background: rgba(239, 68, 68, 0.9);
+            border-color: rgba(239, 68, 68, 0.8);
+        }
+        
+        .chat-box {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.3);
+        }
+        
+        .input-section {
+            padding: 24px;
+            background: rgba(15, 23, 42, 0.6);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 12px;
+        }
+        
+        .input-section input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: #e2e8f0;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .input-section button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .input-section button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            border-radius: 16px;
+            max-width: 85%;
+            word-wrap: break-word;
+            line-height: 1.6;
+        }
+        
+        .message.user {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            margin-left: auto;
+        }
+        
+        .message.bot {
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="chat-container" id="chatContainer">
+        <div class="fullscreen-btn" onclick="toggleFullscreen()" id="fullscreenBtn" title="全屏/退出全屏">
+            <svg id="fullscreenIcon" viewBox="0 0 24 24">
+                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+            </svg>
+        </div>
+        
         <div class="header">
-            <h1>🤖 AI知识助手</h1>
-            <p>智能问答 · 网页爬取 · 知识搜索</p>
-        </div>
-
-        <!-- API配置 -->
-        <div class="card">
-            <h2>🔗 API配置</h2>
-            <div class="api-config">
-                <div class="form-group">
-                    <label>API服务器地址:</label>
-                    <input type="url" id="apiUrl" value="https://388369108e2c.ngrok-free.app" placeholder="输入API地址">
-                    <button class="btn" onclick="testConnection()" style="margin-top: 10px;">🔄 测试连接</button>
+            <div class="title-section">
+                <div class="title-text">
+                    <h1>AI Knowledge Agent</h1>
                 </div>
-                <div id="connectionStatus" class="status" style="display: none;"></div>
+            </div>
+            <div class="nav-links">
+                <a href="ai-config.html" target="_blank">🤖 AI配置</a>
+                <a href="#" onclick="checkAdminAccess('admin-dashboard-optimized.html'); return false;">🛠️ 系统管理</a>
+                <a href="#" onclick="checkAdminAccess('admin.html'); return false;">⚙️ 管理面板</a>
+                <a href="#" onclick="checkAdminAccess('firecrawl-manager.html'); return false;">🔥 爬取管理</a>
+                <a href="#" onclick="showDebugInfo(); return false;" class="debug">🔧 调试信息</a>
             </div>
         </div>
-
-        <!-- 功能选项卡 -->
-        <div class="card">
-            <div class="tabs">
-                <button class="tab active" onclick="showTab('ask')">💬 AI问答</button>
-                <button class="tab" onclick="showTab('crawl')">🕷️ 网页爬取</button>
-                <button class="tab" onclick="showTab('search')">🔍 知识搜索</button>
-            </div>
-
-            <!-- AI问答 -->
-            <div id="ask" class="tab-content active">
-                <div class="form-group">
-                    <label>请输入您的问题:</label>
-                    <input type="text" id="question" placeholder="例如：什么是人工智能？" onkeypress="if(event.key==='Enter') askQuestion()">
-                </div>
-                <button class="btn" onclick="askQuestion()">💬 提问</button>
-                <div id="askResult" class="result" style="display:none;"></div>
-            </div>
-
-            <!-- 网页爬取 -->
-            <div id="crawl" class="tab-content">
-                <div class="form-group">
-                    <label>网页URL:</label>
-                    <input type="url" id="crawlUrl" placeholder="https://example.com" onkeypress="if(event.key==='Enter') crawlPage()">
-                </div>
-                <button class="btn" onclick="crawlPage()">🚀 爬取</button>
-                <div id="crawlResult" class="result" style="display:none;"></div>
-            </div>
-
-            <!-- 知识搜索 -->
-            <div id="search" class="tab-content">
-                <div class="form-group">
-                    <label>搜索关键词:</label>
-                    <input type="text" id="searchQuery" placeholder="输入搜索关键词" onkeypress="if(event.key==='Enter') searchKnowledge()">
-                </div>
-                <button class="btn" onclick="searchKnowledge()">🔍 搜索</button>
-                <div id="searchResult" class="result" style="display:none;"></div>
+        
+        <div class="chat-box" id="chatBox">
+            <div class="message bot">
+                👋 欢迎使用AI物流知识助手！我可以帮您解答关于Amazon物流、FBA、卖家运营等问题。
             </div>
         </div>
-
-        <!-- 使用说明 -->
-        <div class="card">
-            <h2>📖 使用说明</h2>
-            <div class="grid">
-                <div>
-                    <h3>💬 AI问答</h3>
-                    <p>输入任何问题，AI会为您提供智能回答。支持中英文问答，涵盖各种知识领域。</p>
-                </div>
-                <div>
-                    <h3>🕷️ 网页爬取</h3>
-                    <p>输入网页URL，自动提取网页内容。支持大部分网站，自动过滤广告和无关内容。</p>
-                </div>
-                <div>
-                    <h3>🔍 知识搜索</h3>
-                    <p>搜索已存储的知识库内容。爬取的网页内容会自动存储，方便后续搜索。</p>
-                </div>
-                <div>
-                    <h3>🔗 API配置</h3>
-                    <p>默认已配置ngrok地址。如果连接失败，请检查API服务器是否正常运行。</p>
-                </div>
-            </div>
+        
+        <div class="input-section">
+            <input type="text" id="questionInput" placeholder="请输入您的问题..." onkeypress="handleKeyPress(event)">
+            <button onclick="askQuestion()" id="askButton">发送</button>
         </div>
     </div>
 
     <script>
-        let API_BASE_URL = 'https://388369108e2c.ngrok-free.app';
-
-        function showTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            document.getElementById(tabName).classList.add('active');
-        }
-
-        async function testConnection() {
-            const url = document.getElementById('apiUrl').value;
-            const status = document.getElementById('connectionStatus');
-            
-            if (!url) {
-                showStatus('请输入API地址', 'error');
-                return;
-            }
-
-            API_BASE_URL = url.replace(/\/$/, '');
-            status.style.display = 'block';
-            status.textContent = '正在测试连接...';
-            status.className = 'status';
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/health`);
-                const data = await response.json();
-                
-                if (response.ok && data.status === 'healthy') {
-                    showStatus('✅ 连接成功！所有服务正常运行', 'success');
-                } else {
-                    showStatus('❌ 连接失败：服务异常', 'error');
-                }
-            } catch (error) {
-                showStatus('❌ 连接失败：无法访问API服务器', 'error');
-            }
-        }
-
-        function showStatus(message, type) {
-            const status = document.getElementById('connectionStatus');
-            status.style.display = 'block';
-            status.textContent = message;
-            status.className = `status ${type}`;
-        }
-
-        async function askQuestion() {
-            const question = document.getElementById('question').value;
-            if (!question) return alert('请输入问题');
-            
-            const result = document.getElementById('askResult');
-            result.style.display = 'block';
-            result.textContent = '🤔 AI正在思考...';
-
+        // API配置 - 使用ngrok公网地址
+        const API_BASE_URL = 'https://388369108e2c.ngrok-free.app';
+        
+        // 修改AI问答函数使用统一API
+        async function getAIResponse(question) {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/ask`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({question})
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
+                    body: JSON.stringify({ question })
                 });
-                const data = await response.json();
-                
-                result.textContent = `问题：${question}\n\n回答：${data.answer || '抱歉，无法回答这个问题'}\n\n来源：${data.sources ? data.sources.join(', ') : '未知'}`;
-            } catch (error) {
-                result.textContent = '❌ 服务暂时不可用，请稍后再试';
-            }
-        }
 
-        async function crawlPage() {
-            const url = document.getElementById('crawlUrl').value;
-            if (!url) return alert('请输入网页URL');
-            
-            const result = document.getElementById('crawlResult');
-            result.style.display = 'block';
-            result.textContent = '🕷️ 正在爬取网页...';
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/crawl`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({url})
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    result.textContent = `网页：${url}\n标题：${data.title}\n爬取时间：${data.scraped_at}\n\n内容：\n${data.content}`;
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.answer;
                 } else {
-                    result.textContent = `❌ 爬取失败：${data.message || '未知错误'}`;
+                    throw new Error(`API错误: ${response.status}`);
                 }
             } catch (error) {
-                result.textContent = '❌ 爬取失败，请检查URL是否正确';
+                return `抱歉，AI服务暂时不可用。错误: ${error.message}`;
             }
         }
 
-        async function searchKnowledge() {
-            const query = document.getElementById('searchQuery').value;
-            if (!query) return alert('请输入搜索关键词');
+    <script>
+        // 全局变量
+        let isFullscreen = false;
+        
+        // 全屏功能
+        function toggleFullscreen() {
+            console.log('🔄 toggleFullscreen called, current state:', isFullscreen);
             
-            const result = document.getElementById('searchResult');
-            result.style.display = 'block';
-            result.textContent = '🔍 正在搜索...';
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/database`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({action: 'search_articles', query})
-                });
-                const data = await response.json();
-                
-                if (data.success && data.articles && data.articles.length > 0) {
-                    const results = data.articles.map(article => 
-                        `标题：${article.title}\n内容：${article.content}\nURL：${article.url}\n存储时间：${article.stored_at}\n${'='.repeat(50)}`
-                    ).join('\n');
-                    result.textContent = `搜索关键词：${query}\n找到 ${data.count} 条结果\n\n${results}`;
-                } else {
-                    result.textContent = `搜索关键词：${query}\n\n❌ 未找到相关内容\n\n提示：请先使用网页爬取功能添加一些内容到知识库`;
-                }
-            } catch (error) {
-                result.textContent = '❌ 搜索失败，请稍后再试';
+            const chatContainer = document.getElementById('chatContainer');
+            const fullscreenIcon = document.getElementById('fullscreenIcon');
+            
+            if (!chatContainer) {
+                console.error('❌ chatContainer not found');
+                alert('错误：找不到聊天容器');
+                return;
+            }
+            
+            if (!fullscreenIcon) {
+                console.error('❌ fullscreenIcon not found');
+                alert('错误：找不到全屏图标');
+                return;
+            }
+            
+            isFullscreen = !isFullscreen;
+            console.log('✅ 切换全屏状态:', isFullscreen);
+            
+            if (isFullscreen) {
+                chatContainer.classList.add('fullscreen');
+                fullscreenIcon.innerHTML = '<path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>';
+                console.log('✅ 进入全屏模式');
+            } else {
+                chatContainer.classList.remove('fullscreen');
+                fullscreenIcon.innerHTML = '<path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>';
+                console.log('✅ 退出全屏模式');
             }
         }
-
-        // 页面加载时自动测试连接
-        window.onload = function() {
-            testConnection();
-        };
+        
+        // 管理访问功能
+        function checkAdminAccess(targetPage) {
+            console.log('🔐 checkAdminAccess called for:', targetPage);
+            
+            const isAuthenticated = sessionStorage.getItem('admin_authenticated');
+            
+            if (isAuthenticated === 'true') {
+                console.log('✅ 已验证，直接跳转');
+                window.open(targetPage, '_blank');
+                return;
+            }
+            
+            const password = prompt('请输入管理员密码:');
+            
+            if (password === 'admin123') {
+                console.log('✅ 密码正确');
+                sessionStorage.setItem('admin_authenticated', 'true');
+                alert('✅ 验证成功，正在跳转...');
+                setTimeout(() => {
+                    window.open(targetPage, '_blank');
+                }, 500);
+            } else if (password !== null) {
+                console.log('❌ 密码错误');
+                alert('❌ 密码错误，请重试');
+            }
+        }
+        
+        // 调试信息
+        function showDebugInfo() {
+            console.log('🔧 showDebugInfo called');
+            
+            const info = {
+                elements: {
+                    chatContainer: !!document.getElementById('chatContainer'),
+                    fullscreenBtn: !!document.getElementById('fullscreenBtn'),
+                    fullscreenIcon: !!document.getElementById('fullscreenIcon'),
+                    questionInput: !!document.getElementById('questionInput'),
+                    askButton: !!document.getElementById('askButton')
+                },
+                functions: {
+                    toggleFullscreen: typeof toggleFullscreen === 'function',
+                    checkAdminAccess: typeof checkAdminAccess === 'function',
+                    askQuestion: typeof askQuestion === 'function'
+                },
+                variables: {
+                    isFullscreen: isFullscreen
+                }
+            };
+            
+            alert('🔧 调试信息:\n\n' + JSON.stringify(info, null, 2));
+            console.log('🔧 调试信息:', info);
+        }
+        
+        // 问答功能
+        function askQuestion() {
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) return;
+            
+            addMessage('user', question);
+            questionInput.value = '';
+            
+            // 模拟AI回答
+            setTimeout(() => {
+                addMessage('bot', '感谢您的问题！这是一个演示回答。在实际使用中，这里会显示AI生成的智能回答。');
+            }, 1000);
+        }
+        
+        function addMessage(sender, message) {
+            const chatBox = document.getElementById('chatBox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.textContent = message;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                askQuestion();
+            }
+        }
+        
+        // ESC键退出全屏
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && isFullscreen) {
+                console.log('⌨️ ESC键退出全屏');
+                toggleFullscreen();
+            }
+        });
+        
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ 页面DOM加载完成');
+            console.log('🔍 检查关键元素:');
+            console.log('- chatContainer:', !!document.getElementById('chatContainer'));
+            console.log('- fullscreenBtn:', !!document.getElementById('fullscreenBtn'));
+            console.log('- fullscreenIcon:', !!document.getElementById('fullscreenIcon'));
+            
+            document.getElementById('questionInput').focus();
+        });
     </script>
 </body>
 </html>
