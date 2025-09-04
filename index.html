@@ -14,12 +14,13 @@
         }
         
         .container { 
-            max-width: 1200px; 
+            max-width: 800px; 
             margin: 0 auto; 
-            padding: 20px;
+            padding: 40px 20px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            justify-content: center;
         }
         
         .header { 
@@ -101,17 +102,15 @@
         }
         
         .chat-container { 
-            flex: 1;
-            background: rgba(2, 16, 36, 0.6);
-            border-radius: 25px; 
+            background: rgba(2, 16, 36, 0.4);
+            border-radius: 20px; 
             padding: 0;
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255,255,255,0.1);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            max-width: 70%;
-            margin: 0 auto;
+            height: 500px;
         }
         
         .status-bar {
@@ -238,9 +237,9 @@
         
         <div class="nav-buttons">
             <a href="ai-config.html" class="nav-btn">🤖 AI配置</a>
-            <a href="admin-dashboard-optimized.html" class="nav-btn">🔧 系统管理</a>
-            <a href="admin.html" class="nav-btn">⚙️ 管理面板</a>
-            <a href="firecrawl-manager.html" class="nav-btn">🔥 爬取管理</a>
+            <button class="nav-btn" onclick="checkAdminAccess('admin-dashboard-optimized.html')">🔧 系统管理</button>
+            <button class="nav-btn" onclick="checkAdminAccess('admin.html')">⚙️ 管理面板</button>
+            <button class="nav-btn" onclick="checkAdminAccess('firecrawl-manager.html')">🔥 爬取管理</button>
             <button class="nav-btn active" onclick="showDebugInfo()">🔧 调试信息</button>
         </div>
         
@@ -418,6 +417,25 @@
         
         function showDebugInfo() {
             alert('🔧 调试信息:\n\n版本: 修复版 v3.0\n状态: AI对话正常\n功能: 所有按钮可用\nAPI: SiliconFlow正常工作');
+        }
+        
+        // 管理员验证功能
+        function checkAdminAccess(targetPage) {
+            const isAuthenticated = sessionStorage.getItem('admin_authenticated');
+            
+            if (isAuthenticated === 'true') {
+                window.location.href = targetPage;
+                return;
+            }
+            
+            const password = prompt('请输入管理员密码:');
+            if (password === 'admin123') {
+                sessionStorage.setItem('admin_authenticated', 'true');
+                alert('✅ 验证成功！');
+                window.location.href = targetPage;
+            } else if (password !== null) {
+                alert('❌ 密码错误！');
+            }
         }
     </script>
 </body>
