@@ -194,22 +194,26 @@
         }
         
         async function testGitHubConnection() {
-            showStatus('githubStatus', 'info', '🔄 正在测试AI服务连接...');
+            showStatus('githubStatus', 'info', '🔄 正在测试GitHub Models连接...');
             
             try {
-                // 测试统一API服务器
-                const response = await fetch('https://388369108e2c.ngrok-free.app/api/ask', {
+                const response = await fetch('https://models.github.ai/inference/chat/completions', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'ngrok-skip-browser-warning': 'true'
+                        'Accept': 'application/vnd.github+json',
+                        'Authorization': 'Bearer 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',
+                        'X-GitHub-Api-Version': '2022-11-28',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ question: '测试连接' })
+                    body: JSON.stringify({
+                        model: 'openai/gpt-4o-mini',
+                        messages: [{role: 'user', content: '测试连接'}],
+                        max_tokens: 50
+                    })
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
-                    showStatus('githubStatus', 'success', `✅ AI服务连接成功！使用: ${data.api_used || 'AI服务器'}`);
+                    showStatus('githubStatus', 'success', '✅ GitHub Models连接成功！');
                 } else {
                     throw new Error(`API错误: ${response.status}`);
                 }
