@@ -776,8 +776,33 @@
             try {
                 let answer;
                 
+                // 先尝试GitHub Models API
+                try {
+                    const response = await fetch('https://models.inference.ai.azure.com/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer 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',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-4o-mini',
+                            messages: [{role: 'user', content: question}],
+                            max_tokens: 500
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        answer = data.choices[0].message.content;
+                        addMessage('bot', `🤖 AI助手 (GitHub Models): ${answer}`);
+                        return;
+                    }
+                } catch (apiError) {
+                    console.log('GitHub Models API失败，使用本地回答:', apiError);
+                }
+                
                 if (useRealAPI) {
-                    // 直接使用本地智能问答（避免外部依赖）
+                    // 回退到本地智能问答
                     console.log('使用本地智能问答');
                     answer = generateSmartAnswer(question);
                 } else {
