@@ -3,53 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI知识助手</title>
+    <title>AI Logistics Knowledge Agent</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; color: white; margin-bottom: 30px; }
-        .nav-buttons { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .nav-btn { padding: 8px 15px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 20px; font-size: 14px; border: none; cursor: pointer; }
-        .nav-btn:hover { background: rgba(255,255,255,0.3); }
-        .chat-container { background: rgba(255,255,255,0.95); border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .chat-box { height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 10px; background: #f9f9f9; }
-        .message { margin: 10px 0; padding: 10px; border-radius: 8px; }
-        .message.user-message { background: #e3f2fd; text-align: right; }
-        .message.bot-message { background: #f1f8e9; }
-        .input-area { display: flex; gap: 10px; }
-        .input-area input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        .input-area button { padding: 12px 20px; background: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
-        .input-area button:hover { background: #45a049; }
-        .fullscreen-btn { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px; border-radius: 50%; cursor: pointer; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: linear-gradient(135deg, #021024 0%, #052659 50%, #7DA0CA 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, rgba(125, 160, 202, 0.3) 0%, rgba(5, 38, 89, 0.5) 100%);
+            padding: 40px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+        
+        .header::before {
+            content: '🤖';
+            position: absolute;
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 40px;
+            opacity: 0.8;
+        }
+        
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 { 
+            font-size: 48px; 
+            font-weight: 300;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #C1E8FF, #7DA0CA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p { 
+            font-size: 16px; 
+            opacity: 0.8;
+        }
+        
+        .nav-buttons { 
+            display: flex; 
+            gap: 15px; 
+            margin-bottom: 30px; 
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .nav-btn { 
+            padding: 12px 24px; 
+            background: rgba(125, 160, 202, 0.2);
+            color: white; 
+            text-decoration: none; 
+            border-radius: 25px; 
+            font-size: 14px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover { 
+            background: rgba(125, 160, 202, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn.active {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+        }
+        
+        .chat-container { 
+            flex: 1;
+            background: rgba(2, 16, 36, 0.6);
+            border-radius: 25px; 
+            padding: 0;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .status-bar {
+            background: rgba(5, 38, 89, 0.8);
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #7DA0CA;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .chat-box { 
+            flex: 1;
+            overflow-y: auto; 
+            padding: 30px;
+            min-height: 400px;
+        }
+        
+        .message { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border-radius: 20px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .message.user-message { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin-left: auto;
+            text-align: right;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.bot-message { 
+            background: rgba(125, 160, 202, 0.15);
+            border: 1px solid rgba(125, 160, 202, 0.3);
+            border-bottom-left-radius: 5px;
+        }
+        
+        .input-area { 
+            padding: 30px;
+            background: rgba(2, 16, 36, 0.8);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex; 
+            gap: 15px;
+        }
+        
+        .input-area input { 
+            flex: 1; 
+            padding: 16px 20px; 
+            border: 1px solid rgba(125, 160, 202, 0.3);
+            border-radius: 25px; 
+            font-size: 16px;
+            background: rgba(125, 160, 202, 0.1);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+        
+        .input-area input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .input-area input:focus {
+            outline: none;
+            border-color: #7DA0CA;
+            box-shadow: 0 0 20px rgba(125, 160, 202, 0.3);
+        }
+        
+        .input-area button { 
+            padding: 16px 32px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            border: none; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .input-area button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .welcome-message {
+            background: rgba(125, 160, 202, 0.15);
+            border: 1px solid rgba(125, 160, 202, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            border-bottom-left-radius: 5px;
+        }
+        
+        /* 滚动条样式 */
+        .chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-box::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+        
+        .chat-box::-webkit-scrollbar-thumb {
+            background: rgba(125, 160, 202, 0.5);
+            border-radius: 3px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 32px; }
+            .nav-buttons { justify-content: center; }
+            .message { max-width: 95%; }
+            .input-area { padding: 20px; }
+        }
     </style>
 </head>
 <body>
-    <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶</button>
-    
     <div class="container">
         <div class="header">
-            <h1>🤖 AI知识助手</h1>
-            <p>智能问答系统 - 基于先进AI技术</p>
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶</button>
+            <h1>AI Logistics Knowledge Agent</h1>
+            <p>智能物流知识助手 - 基于先进AI技术</p>
         </div>
         
         <div class="nav-buttons">
             <a href="ai-config.html" class="nav-btn">🤖 AI配置</a>
-            <a href="admin-dashboard-optimized.html" class="nav-btn">🛠️ 系统管理</a>
+            <a href="admin-dashboard-optimized.html" class="nav-btn">🔧 系统管理</a>
             <a href="admin.html" class="nav-btn">⚙️ 管理面板</a>
             <a href="firecrawl-manager.html" class="nav-btn">🔥 爬取管理</a>
-            <button class="nav-btn" onclick="showDebugInfo()">🔧 调试信息</button>
+            <button class="nav-btn active" onclick="showDebugInfo()">🔧 调试信息</button>
         </div>
         
         <div class="chat-container">
+            <div class="status-bar">
+                🔄 正在检测API连接状态...
+            </div>
+            
             <div class="chat-box" id="chatBox">
-                <div class="message bot-message">
-                    🤖 <strong>AI助手:</strong> 你好！我是AI知识助手，有什么可以帮助您的吗？
+                <div class="welcome-message">
+                    👋 <strong>你好！我是AI知识助手</strong>，可以回答seller facing的物流专业问题，请问有什么可以帮助您的呢？
                 </div>
             </div>
             
             <div class="input-area">
-                <input type="text" id="questionInput" placeholder="输入您的问题..." onkeypress="handleKeyPress(event)">
+                <input type="text" id="questionInput" placeholder="请输入您的问题..." onkeypress="handleKeyPress(event)">
                 <button onclick="askQuestion()" id="askButton">发送</button>
             </div>
         </div>
