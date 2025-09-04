@@ -241,8 +241,8 @@
     </div>
 
     <script>
-        // API配置 - 使用ngrok公网地址
-        const API_BASE_URL = 'https://388369108e2c.ngrok-free.app';
+        // API配置 - 使用新的ngrok地址
+        const API_BASE_URL = 'https://7939af8f75b6.ngrok-free.app';
         let useRealAPI = true;
         
         // 全局变量
@@ -344,22 +344,29 @@
             addMessage('user', question);
             questionInput.value = '';
             
-            // 使用真实AI API
+            // 直接使用GitHub Models API
             const thinkingMsg = addMessage('bot', '🤖 AI正在思考...');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/ask`, {
+                const response = await fetch('https://models.github.ai/inference/chat/completions', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'ngrok-skip-browser-warning': 'true'
+                        'Accept': 'application/vnd.github+json',
+                        'Authorization': 'Bearer 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',
+                        'X-GitHub-Api-Version': '2022-11-28',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ question })
+                    body: JSON.stringify({
+                        model: 'openai/gpt-4o-mini',
+                        messages: [{role: 'user', content: question}],
+                        max_tokens: 500
+                    })
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    thinkingMsg.innerHTML = `<strong>AI助手 (${data.api_used || 'AI服务器'}):</strong> ${data.answer}`;
+                    const answer = data.choices[0].message.content;
+                    thinkingMsg.innerHTML = `<strong>AI助手 (GitHub Models):</strong> ${answer}`;
                 } else {
                     throw new Error(`API错误: ${response.status}`);
                 }
