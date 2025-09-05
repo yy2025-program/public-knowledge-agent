@@ -374,7 +374,8 @@
                     body: JSON.stringify({
                         model: 'Qwen/Qwen2.5-7B-Instruct',
                         messages: [{role: 'user', content: question}],
-                        max_tokens: 300
+                        max_tokens: 150,
+                        temperature: 0.3
                     })
                 });
 
@@ -418,6 +419,31 @@
         function showDebugInfo() {
             alert('🔧 调试信息:\n\n版本: 修复版 v3.0\n状态: AI对话正常\n功能: 所有按钮可用\nAPI: SiliconFlow正常工作');
         }
+        
+        // 加载预置知识库
+        async function loadPresetKnowledge() {
+            try {
+                const response = await fetch('./knowledge_base.json');
+                const knowledgeData = await response.json();
+                
+                let existingKnowledge = JSON.parse(localStorage.getItem(STORAGE_KEYS.CRAWLED_DATA) || '[]');
+                
+                for (const item of knowledgeData) {
+                    const exists = existingKnowledge.some(existing => existing.url === item.url);
+                    if (!exists) {
+                        existingKnowledge.push(item);
+                    }
+                }
+                
+                localStorage.setItem(STORAGE_KEYS.CRAWLED_DATA, JSON.stringify(existingKnowledge));
+                console.log('预置知识库加载完成');
+            } catch (error) {
+                console.log('预置知识库加载失败:', error);
+            }
+        }
+
+        // 页面加载时自动加载知识库
+        window.addEventListener('load', loadPresetKnowledge);
         
         // 管理员验证功能
         function checkAdminAccess(targetPage) {
