@@ -120,30 +120,44 @@
             <p style="color: rgba(226, 232, 240, 0.7);">配置AI以启用高级问答功能</p>
         </div>
         
-        <!-- GitHub Models 配置 -->
+        <!-- AI API 配置 -->
         <div class="config-section">
-            <h3>🆓 AI Models</h3>
+            <h3>🤖 AI API 配置</h3>
             
             <div class="form-group">
-                <label>API key:</label>
-                <input type="password" id="githubToken" placeholder="输入您的GitHub Token">
-            </div>
-            
-            <div class="form-group">
-                <label>AI模型:</label>
-                <select id="githubModel">
-                    <option value="gpt-4o-mini">GPT-4o Mini (推荐)</option>
-                    <option value="gpt-4o">GPT-4o (高级)</option>
-                    <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-                    <option value="llama-3.1-70b-instruct">Llama 3.1 70B</option>
-                    <option value="phi-3.5-mini-instruct">Phi-3.5 Mini</option>
+                <label>API 提供商:</label>
+                <select id="apiProvider" onchange="updateApiConfig()">
+                    <option value="siliconflow">SiliconFlow (默认)</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
                 </select>
             </div>
             
-            <button class="btn btn-primary" onclick="saveGitHubConfig()">保存配置</button>
-            <button class="btn btn-secondary" onclick="testGitHubConnection()">测试连接</button>
+            <div class="form-group">
+                <label>API Key:</label>
+                <input type="password" id="apiKey" placeholder="输入API密钥">
+                <small style="color: rgba(226, 232, 240, 0.6); display: block; margin-top: 5px;">
+                    <input type="checkbox" id="showApiKey" onchange="toggleApiKey()"> 显示密钥
+                </small>
+            </div>
             
-            <div id="githubStatus" class="status"></div>
+            <div class="form-group">
+                <label>模型:</label>
+                <select id="apiModel">
+                    <option value="Qwen/Qwen2.5-7B-Instruct">Qwen2.5-7B-Instruct</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>API 端点:</label>
+                <input type="url" id="apiEndpoint" placeholder="API基础URL" readonly style="background: rgba(125, 160, 202, 0.05);">
+            </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="saveApiConfig()">保存配置</button>
+            <button class="btn btn-secondary" onclick="testApiConnection()">测试连接</button>
+            
+            <div id="apiStatus" class="status"></div>
             
             <p style="color: rgba(226, 232, 240, 0.6); font-size: 11px; margin-top: 10px;">
                 💡 获取Token: <a href="https://github.com/settings/tokens" target="_blank" style="color: #60a5fa;">Developer settings → tokens</a><br>
