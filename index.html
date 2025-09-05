@@ -341,7 +341,7 @@
             
             if (knowledgeMatch) {
                 // 使用知识库内容增强AI回答
-                const context = `基于我的知识库，关于"${question}"的信息：\n${knowledgeMatch.content.substring(0, 500)}...`;
+                const context = `基于我的知识库，关于"${actualQuestion}"的信息：\n${knowledgeMatch.content.substring(0, 500)}...`;
                 
                 try {
                     const systemPrompt = language === 'chinese' ? '你是物流AI助手，用中文简洁回答。' :
@@ -381,6 +381,10 @@
             
             // 没有知识库匹配时使用普通AI回答
             try {
+                const systemPrompt = language === 'chinese' ? '你是物流AI助手，用中文简洁回答。' :
+                                   language === 'english' ? 'You are a logistics AI assistant, answer concisely in English.' :
+                                   '你是物流AI助手，简洁回答。';
+                
                 const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
                     method: 'POST',
                     headers: {
@@ -389,7 +393,10 @@
                     },
                     body: JSON.stringify({
                         model: 'Qwen/Qwen2.5-7B-Instruct',
-                        messages: [{role: 'user', content: question}],
+                        messages: [
+                            {role: 'system', content: systemPrompt},
+                            {role: 'user', content: actualQuestion}
+                        ],
                         max_tokens: 150,
                         temperature: 0.3
                     })
