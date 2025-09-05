@@ -336,6 +336,7 @@
             </div>
             
             <button class="btn" onclick="addManualContent()">添加内容</button>
+            <div id="manualStatus"></div>
         </div>
 
         <!-- 测试问答 -->
@@ -642,10 +643,146 @@
             }
         }
 
+        // 搜索内容
+        function searchContent() {
+            const query = document.getElementById('searchQuery').value.trim();
+            const knowledgeBase = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
+            
+            let results = knowledgeBase;
+            
+            if (query) {
+                results = knowledgeBase.filter(item => 
+                    item.title.toLowerCase().includes(query.toLowerCase()) ||
+                    item.content.toLowerCase().includes(query.toLowerCase()) ||
+                    (item.keywords && item.keywords.some(kw => kw.toLowerCase().includes(query.toLowerCase())))
+                );
+            }
+            
+            displaySearchResults(results);
+        }
+
+        // 显示搜索结果
+        function displaySearchResults(results) {
+            const resultDiv = document.getElementById('contentResult');
+            resultDiv.style.display = 'block';
+            
+            if (results.length === 0) {
+                resultDiv.innerHTML = '<div class="status error">❌ 未找到相关内容</div>';
+                return;
+            }
+            
+            let html = `<h3>找到 ${results.length} 条结果：</h3>`;
+            results.forEach((item, index) => {
+                html += `
+                    <div style="border: 1px solid rgba(125, 160, 202, 0.3); border-radius: 10px; padding: 15px; margin: 10px 0; background: rgba(125, 160, 202, 0.1);">
+                        <h4 style="color: #C1E8FF; margin-bottom: 10px;">${item.title}</h4>
+                        <p style="margin-bottom: 10px;">${item.content.substring(0, 200)}...</p>
+                        <small style="color: #7DA0CA;">
+                            来源: ${item.url || '手动添加'} | 
+                            时间: ${item.timestamp ? new Date(item.timestamp).toLocaleString() : '未知'}
+                            ${item.keywords ? ' | 关键词: ' + item.keywords.join(', ') : ''}
+                        </small>
+                        <br>
+                        <button class="btn" style="margin-top: 10px; padding: 5px 10px; font-size: 12px;" onclick="deleteContent(${index})">删除</button>
+                    </div>
+                `;
+            });
+            
+            resultDiv.innerHTML = html;
+        }
+
+        // 删除内容
+        function deleteContent(index) {
+            if (confirm('确定要删除这条内容吗？')) {
+                let knowledgeBase = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
+                knowledgeBase.splice(index, 1);
+                localStorage.setItem('firecrawl_knowledge_base', JSON.stringify(knowledgeBase));
+                searchContent(); // 刷新显示
+            }
+        }
+
+        // 列出所有内容
         function listAllContent() {
-            // 搜索空字符串来获取所有内容
             document.getElementById('searchQuery').value = '';
             searchContent();
+        }
+
+        // 手动添加内容
+        function addManualContent() {
+            const title = document.getElementById('manualTitle').value.trim();
+            const content = document.getElementById('manualContent').value.trim();
+            const url = document.getElementById('manualUrl').value.trim();
+            const keywords = document.getElementById('manualKeywords').value.trim();
+            
+            if (!title || !content) {
+                document.getElementById('manualStatus').innerHTML = '<div class="status error">❌ 请填写标题和内容</div>';
+                return;
+            }
+            
+            const newItem = {
+                title: title,
+                content: content,
+                url: url || `internal://manual-${Date.now()}`,
+                keywords: keywords ? keywords.split(',').map(k => k.trim()) : [],
+                category: 'manual',
+                timestamp: new Date().toISOString(),
+                source: 'manual'
+            };
+            
+            let knowledgeBase = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
+            knowledgeBase.push(newItem);
+            localStorage.setItem('firecrawl_knowledge_base', JSON.stringify(knowledgeBase));
+            
+            // 清空表单
+            document.getElementById('manualTitle').value = '';
+            document.getElementById('manualContent').value = '';
+            document.getElementById('manualUrl').value = '';
+            document.getElementById('manualKeywords').value = '';
+            
+            document.getElementById('manualStatus').innerHTML = '<div class="status success">✅ 内容添加成功</div>';
+        }
+
+        // 测试问答
+        async function testQuestion() {
+            const question = document.getElementById('testQuestion').value.trim();
+            const useDatabase = document.getElementById('useDatabase').checked;
+            const useAI = document.getElementById('useAI').checked;
+            
+            if (!question) {
+                document.getElementById('testResult').innerHTML = '<div class="status error">❌ 请输入测试问题</div>';
+                document.getElementById('testResult').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('testResult').innerHTML = '<div class="status info">🔄 正在处理问题...</div>';
+            document.getElementById('testResult').style.display = 'block';
+            
+            let knowledgeMatch = null;
+            
+            // 搜索知识库
+            if (useDatabase) {
+                const knowledgeBase = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
+                const questionLower = question.toLowerCase();
+                
+                for (const item of knowledgeBase) {
+                    if (item.title.toLowerCase().includes(questionLower) || 
+                        item.content.toLowerCase().includes(questionLower)) {
+                        knowledgeMatch = item;
+                        break;
+                    }
+                }
+            }
+            
+            if (knowledgeMatch) {
+                document.getElementById('testResult').innerHTML = `
+                    <div class="status success">✅ 找到匹配内容</div>
+                    <h4 style="color: #C1E8FF; margin: 15px 0 10px 0;">匹配标题：${knowledgeMatch.title}</h4>
+                    <p style="margin-bottom: 10px;"><strong>内容：</strong>${knowledgeMatch.content.substring(0, 300)}...</p>
+                    <small style="color: #7DA0CA;">来源：${knowledgeMatch.url || '知识库'}</small>
+                `;
+            } else {
+                document.getElementById('testResult').innerHTML = '<div class="status error">❌ 未找到相关内容</div>';
+            }
         }
 
         // API连接测试
