@@ -470,13 +470,82 @@
                 return;
             }
             
-            const password = prompt('请输入管理员密码:');
+            showPasswordDialog(targetPage);
+        }
+
+        // 显示密码输入对话框
+        function showPasswordDialog(targetPage) {
+            const dialog = document.createElement('div');
+            dialog.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.7); display: flex; align-items: center; 
+                justify-content: center; z-index: 1000;
+            `;
+            
+            dialog.innerHTML = `
+                <div style="background: rgba(2, 16, 36, 0.9); padding: 30px; border-radius: 20px; 
+                           backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); 
+                           min-width: 300px; text-align: center;">
+                    <h3 style="color: #C1E8FF; margin-bottom: 20px;">请输入管理员密码</h3>
+                    <div style="position: relative; margin-bottom: 15px;">
+                        <input type="password" id="adminPassword" placeholder="输入密码..." 
+                               style="width: 100%; padding: 12px; border: 1px solid rgba(125, 160, 202, 0.3); 
+                                      border-radius: 10px; background: rgba(125, 160, 202, 0.1); 
+                                      color: white; font-size: 16px;">
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="color: #7DA0CA; font-size: 14px; cursor: pointer;">
+                            <input type="checkbox" id="showPassword" onchange="togglePassword()"> 显示密码
+                        </label>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button onclick="verifyPassword('${targetPage}')" 
+                                style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                       color: white; border: none; border-radius: 10px; cursor: pointer;">确认</button>
+                        <button onclick="closePasswordDialog()" 
+                                style="padding: 10px 20px; background: rgba(255,255,255,0.1); 
+                                       color: white; border: none; border-radius: 10px; cursor: pointer;">取消</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+            document.getElementById('adminPassword').focus();
+            
+            // 回车键确认
+            document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyPassword(targetPage);
+                }
+            });
+        }
+
+        // 切换密码显示
+        function togglePassword() {
+            const passwordInput = document.getElementById('adminPassword');
+            const showPassword = document.getElementById('showPassword');
+            passwordInput.type = showPassword.checked ? 'text' : 'password';
+        }
+
+        // 验证密码
+        function verifyPassword(targetPage) {
+            const password = document.getElementById('adminPassword').value;
             if (password === 'admin123') {
                 sessionStorage.setItem('admin_authenticated', 'true');
-                alert('✅ 验证成功！');
+                closePasswordDialog();
                 window.location.href = targetPage;
-            } else if (password !== null) {
+            } else {
                 alert('❌ 密码错误！');
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPassword').focus();
+            }
+        }
+
+        // 关闭密码对话框
+        function closePasswordDialog() {
+            const dialog = document.querySelector('div[style*="position: fixed"]');
+            if (dialog) {
+                document.body.removeChild(dialog);
             }
         }
     </script>
