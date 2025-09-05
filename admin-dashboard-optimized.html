@@ -248,7 +248,7 @@
                 <h3>🤖 AI服务管理</h3>
                 <div style="margin-bottom: 12px;">
                     <span class="status-indicator" id="githubStatus"></span>
-                    GitHub Models
+                    AI 模型 (Qwen/ChatGPT)
                 </div>
                 <div style="margin-bottom: 12px;">
                     <span class="status-indicator" id="bedrockStatus"></span>
@@ -376,7 +376,7 @@
                     const isWorking = await githubAI.testConnection();
                     githubStatus.className = isWorking ? 'status-indicator status-online' : 'status-indicator status-offline';
                     document.getElementById('aiStatus').textContent = isWorking ? '在线' : '离线';
-                    document.getElementById('aiChange').textContent = isWorking ? 'GitHub Models 可用' : 'GitHub Models 不可用';
+                    document.getElementById('aiChange').textContent = isWorking ? 'AI 可用' : 'AI 不可用';
                     document.getElementById('aiChange').className = isWorking ? 'change positive' : 'change negative';
                 } catch (error) {
                     githubStatus.className = 'status-indicator status-offline';

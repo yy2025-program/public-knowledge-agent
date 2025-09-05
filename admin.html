@@ -236,11 +236,10 @@
     </style>
 </head>
 <body>
-    <button class="back-btn" onclick="window.location.href='index.html'">← 返回主页</button>
-    
     <div class="header">
         <h1>🛠️ AI Logistics Knowledge Agent 管理面板</h1>
         <p style="opacity: 0.8; margin-top: 10px;">管理您的知识库内容和爬虫任务</p>
+        <button class="back-btn" onclick="window.location.href='index.html'" style="position: static; margin-top: 15px; display: inline-block;">← 返回主页</button>
     </div>
 
     <div class="container">
@@ -792,16 +791,26 @@
                 const response = await fetch('https://api.siliconflow.cn/v1/models', {
                     headers: { 'Authorization': 'Bearer sk-jjhtgselzbsadzvxtqfiqeajhznfrxbqlwdaglorelklxzqf' }
                 });
-                document.getElementById('askApiStatus').innerHTML = '✅ Ask API: 连接成功 (SiliconFlow)';
+                document.getElementById('askApiStatus').innerHTML = response.ok ? 
+                    '✅ Ask API: 连接成功' : '❌ Ask API: 连接失败';
             } catch {
-                document.getElementById('askApiStatus').innerHTML = '✅ Ask API: 连接成功 (SiliconFlow)';
+                document.getElementById('askApiStatus').innerHTML = '❌ Ask API: 连接失败';
             }
 
             // 测试Firecrawl API
             try {
-                document.getElementById('crawlApiStatus').innerHTML = '✅ Crawl API: 连接成功 (Firecrawl)';
+                const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': 'Bearer fc-55103d720517400bb7a9372a83cf6c84',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: 'https://example.com' })
+                });
+                document.getElementById('crawlApiStatus').innerHTML = response.ok ? 
+                    '✅ Crawl API: 连接成功' : '❌ Crawl API: 连接失败';
             } catch {
-                document.getElementById('crawlApiStatus').innerHTML = '✅ Crawl API: 连接成功 (Firecrawl)';
+                document.getElementById('crawlApiStatus').innerHTML = '❌ Crawl API: 连接失败';
             }
 
             // 数据库状态（localStorage）
