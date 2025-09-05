@@ -279,6 +279,16 @@
 
             <!-- 内容管理 -->
             <div class="card">
+                <h2>📚 知识库批量导入</h2>
+                <div class="form-group">
+                    <label>上传JSON知识库文件：</label>
+                    <input type="file" id="knowledgeFile" accept=".json" />
+                </div>
+                <button class="btn" onclick="importKnowledge()">导入知识库</button>
+                <div id="importStatus"></div>
+            </div>
+
+            <div class="card">
                 <h2>📚 内容管理</h2>
                 <div class="form-group">
                     <label for="searchQuery">搜索内容:</label>
@@ -666,6 +676,63 @@
         window.onload = function() {
             testConnections();
         };
+
+        // 导入知识库
+        function importKnowledge() {
+            const fileInput = document.getElementById('knowledgeFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                document.getElementById('importStatus').innerHTML = '<div class="status error">❌ 请选择文件</div>';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const knowledgeData = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(knowledgeData)) {
+                        throw new Error('文件格式错误，应该是JSON数组');
+                    }
+
+                    // 合并到现有知识库
+                    let existingKnowledge = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
+                    let importCount = 0;
+
+                    for (const item of knowledgeData) {
+                        // 检查必需字段
+                        if (!item.title || !item.content) {
+                            continue;
+                        }
+                        
+                        // 生成唯一URL
+                        if (!item.url) {
+                            item.url = `internal://${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                        }
+                        
+                        // 检查是否已存在
+                        const exists = existingKnowledge.some(existing => existing.url === item.url || existing.title === item.title);
+                        if (!exists) {
+                            existingKnowledge.push({
+                                ...item,
+                                timestamp: new Date().toISOString(),
+                                source: 'imported'
+                            });
+                            importCount++;
+                        }
+                    }
+
+                    localStorage.setItem('firecrawl_knowledge_base', JSON.stringify(existingKnowledge));
+                    document.getElementById('importStatus').innerHTML = `<div class="status success">✅ 成功导入 ${importCount} 条知识</div>`;
+                    
+                } catch (error) {
+                    document.getElementById('importStatus').innerHTML = `<div class="status error">❌ 导入失败: ${error.message}</div>`;
+                }
+            };
+            
+            reader.readAsText(file);
+        }
     </script>
 </body>
 </html>
