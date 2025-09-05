@@ -315,9 +315,21 @@
 
         async function askQuestion() {
             const input = document.getElementById('questionInput');
-            const question = input.value.trim();
+            let question = input.value.trim();
             
             if (!question) return;
+            
+            // 检测语言前缀
+            let language = 'auto';
+            let actualQuestion = question;
+            
+            if (question.startsWith('CN ')) {
+                language = 'chinese';
+                actualQuestion = question.substring(3);
+            } else if (question.startsWith('EN ')) {
+                language = 'english';
+                actualQuestion = question.substring(3);
+            }
             
             addMessage('user', question);
             input.value = '';
@@ -325,13 +337,17 @@
             const thinkingMsg = addMessage('bot', '🤖 AI正在思考...');
             
             // 先搜索本地知识库
-            const knowledgeMatch = searchKnowledgeBase(question);
+            const knowledgeMatch = searchKnowledgeBase(actualQuestion);
             
             if (knowledgeMatch) {
                 // 使用知识库内容增强AI回答
                 const context = `基于我的知识库，关于"${question}"的信息：\n${knowledgeMatch.content.substring(0, 500)}...`;
                 
                 try {
+                    const systemPrompt = language === 'chinese' ? '你是物流AI助手，用中文简洁回答。' :
+                                       language === 'english' ? 'You are a logistics AI assistant, answer concisely in English.' :
+                                       '你是物流AI助手，简洁回答。';
+                    
                     const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
                         method: 'POST',
                         headers: {
