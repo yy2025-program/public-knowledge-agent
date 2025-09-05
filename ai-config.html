@@ -171,24 +171,156 @@
         </div>
     </div>
     
-    <script src="github-models-integration.js"></script>
     <script>
-        // 页面加载时初始化
-        window.onload = function() {
-            const savedToken = localStorage.getItem('github_models_token') || '';
-            const savedModel = localStorage.getItem('github_models_current') || 'gpt-4o-mini';
-            
-            document.getElementById('githubToken').value = savedToken;
-            document.getElementById('githubModel').value = savedModel;
+        // API配置映射
+        const apiConfigs = {
+            siliconflow: {
+                endpoint: 'https://api.siliconflow.cn/v1/chat/completions',
+                models: ['Qwen/Qwen2.5-7B-Instruct', 'Qwen/Qwen2.5-14B-Instruct', 'deepseek-ai/DeepSeek-V2.5']
+            },
+            modelscope: {
+                endpoint: 'https://api-inference.modelscope.cn/v1/chat/completions',
+                models: ['deepseek-ai/DeepSeek-V3.1', 'Qwen/Qwen2.5-Coder-32B-Instruct', 'Qwen/Qwen2.5-7B-Instruct', 'Qwen/Qwen2.5-14B-Instruct']
+            },
+            openai: {
+                endpoint: 'https://api.openai.com/v1/chat/completions',
+                models: ['gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo', 'gpt-4-turbo']
+            },
+            anthropic: {
+                endpoint: 'https://api.anthropic.com/v1/messages',
+                models: ['claude-3-5-sonnet-20241022', 'claude-3-haiku-20240307', 'claude-3-opus-20240229']
+            }
         };
-        
+
         function showStatus(elementId, type, message) {
             const element = document.getElementById(elementId);
             element.className = `status ${type}`;
             element.textContent = message;
             element.style.display = 'block';
         }
-        
+
+        // 更新API配置
+        function updateApiConfig() {
+            const provider = document.getElementById('apiProvider').value;
+            const config = apiConfigs[provider];
+            
+            document.getElementById('apiEndpoint').value = config.endpoint;
+            
+            const modelSelect = document.getElementById('apiModel');
+            modelSelect.innerHTML = '';
+            config.models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                modelSelect.appendChild(option);
+            });
+        }
+
+        // 切换API密钥显示
+        function toggleApiKey() {
+            const apiKeyInput = document.getElementById('apiKey');
+            const showApiKey = document.getElementById('showApiKey');
+            apiKeyInput.type = showApiKey.checked ? 'text' : 'password';
+        }
+
+        // 保存API配置
+        function saveApiConfig() {
+            const provider = document.getElementById('apiProvider').value;
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const model = document.getElementById('apiModel').value;
+            const endpoint = document.getElementById('apiEndpoint').value;
+            
+            if (!apiKey) {
+                showStatus('apiStatus', 'error', '请输入API密钥');
+                return;
+            }
+            
+            const config = {
+                provider,
+                apiKey,
+                model,
+                endpoint
+            };
+            
+            localStorage.setItem('ai_api_config', JSON.stringify(config));
+            showStatus('apiStatus', 'success', '配置已保存');
+        }
+
+        // 测试API连接
+        async function testApiConnection() {
+            const provider = document.getElementById('apiProvider').value;
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const model = document.getElementById('apiModel').value;
+            const endpoint = document.getElementById('apiEndpoint').value;
+            
+            if (!apiKey) {
+                showStatus('apiStatus', 'error', '请先输入API密钥');
+                return;
+            }
+            
+            showStatus('apiStatus', 'info', '正在测试连接...');
+            
+            try {
+                let response;
+                
+                if (provider === 'anthropic') {
+                    response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'x-api-key': apiKey,
+                            'Content-Type': 'application/json',
+                            'anthropic-version': '2023-06-01'
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            max_tokens: 10,
+                            messages: [{ role: 'user', content: 'Hi' }]
+                        })
+                    });
+                } else {
+                    response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [{ role: 'user', content: 'Hi' }],
+                            max_tokens: 10
+                        })
+                    });
+                }
+                
+                if (response.ok) {
+                    showStatus('apiStatus', 'success', `${provider.toUpperCase()} API 连接成功`);
+                } else {
+                    showStatus('apiStatus', 'error', `连接失败: ${response.status}`);
+                }
+            } catch (error) {
+                showStatus('apiStatus', 'error', `连接失败: ${error.message}`);
+            }
+        }
+
+        // 加载保存的配置
+        function loadApiConfig() {
+            const saved = localStorage.getItem('ai_api_config');
+            if (saved) {
+                const config = JSON.parse(saved);
+                document.getElementById('apiProvider').value = config.provider || 'siliconflow';
+                document.getElementById('apiKey').value = config.apiKey || '';
+                updateApiConfig();
+                document.getElementById('apiModel').value = config.model || '';
+            } else {
+                updateApiConfig(); // 加载默认配置
+            }
+        }
+
+        // 页面加载时初始化
+        window.onload = function() {
+            loadApiConfig();
+        };
+    </script>
         function saveGitHubConfig() {
             const token = document.getElementById('githubToken').value.trim();
             const model = document.getElementById('githubModel').value;
