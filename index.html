@@ -313,6 +313,21 @@
             }
         }
 
+        // 获取AI配置
+        function getAIConfig() {
+            const saved = localStorage.getItem('ai_api_config');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            // 默认配置
+            return {
+                provider: 'siliconflow',
+                apiKey: 'sk-jjhtgselzbsadzvxtqfiqeajhznfrxbqlwdaglorelklxzqf',
+                model: 'Qwen/Qwen2.5-7B-Instruct',
+                endpoint: 'https://api.siliconflow.cn/v1/chat/completions'
+            };
+        }
+
         async function askQuestion() {
             const input = document.getElementById('questionInput');
             let question = input.value.trim();
