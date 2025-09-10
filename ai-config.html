@@ -151,7 +151,10 @@
             
             <div class="form-group">
                 <label>API 端点:</label>
-                <input type="url" id="apiEndpoint" placeholder="API基础URL" readonly style="background: rgba(125, 160, 202, 0.05);">
+                <input type="password" id="apiEndpoint" placeholder="API基础URL" readonly style="background: rgba(125, 160, 202, 0.05);">
+                <small style="color: rgba(226, 232, 240, 0.6); display: block; margin-top: 5px;">
+                    <input type="checkbox" id="showEndpoint" onchange="toggleEndpoint()"> 显示端点
+                </small>
             </div>
             </div>
             
@@ -221,6 +224,13 @@
             const apiKeyInput = document.getElementById('apiKey');
             const showApiKey = document.getElementById('showApiKey');
             apiKeyInput.type = showApiKey.checked ? 'text' : 'password';
+        }
+
+        // 切换API端点显示
+        function toggleEndpoint() {
+            const endpointInput = document.getElementById('apiEndpoint');
+            const showEndpoint = document.getElementById('showEndpoint');
+            endpointInput.type = showEndpoint.checked ? 'text' : 'password';
         }
 
         // 保存API配置
