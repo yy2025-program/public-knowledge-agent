@@ -376,17 +376,76 @@
             }
         }
         
-        function askQuestion() {
+        function getAIConfig() {
+            const saved = localStorage.getItem('ai_api_config');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            // 默认配置
+            return {
+                provider: 'siliconflow',
+                apiKey: 'sk-jjhtgselzbsadzvxtqfiqeajhznfrxbqlwdaglorelklxzqf',
+                model: 'Qwen/Qwen2.5-7B-Instruct',
+                endpoint: 'https://api.siliconflow.cn/v1/chat/completions'
+            };
+        }
+
+        async function askQuestion() {
             const input = document.getElementById('questionInput');
-            const question = input.value.trim();
-            if (question) {
-                addMessage('user', question);
-                input.value = '';
+            let question = input.value.trim();
+            
+            if (!question) return;
+            
+            // 检测语言前缀
+            let language = 'auto';
+            let actualQuestion = question;
+            
+            if (question.startsWith('CN ')) {
+                language = 'chinese';
+                actualQuestion = question.substring(3);
+            } else if (question.startsWith('EN ')) {
+                language = 'english';
+                actualQuestion = question.substring(3);
+            }
+            
+            addMessage('user', question);
+            input.value = '';
+            
+            const thinkingMsg = addMessage('bot', '🤖 AI正在思考...');
+            
+            try {
+                const aiConfig = getAIConfig();
+                const systemPrompt = language === 'chinese' ? '你是物流AI助手，用中文简洁回答。' :
+                                   language === 'english' ? 'You are a logistics AI assistant, answer concisely in English.' :
+                                   '你是物流AI助手，简洁回答。';
                 
-                // 简单的AI回答
-                setTimeout(() => {
-                    addMessage('bot', `🤖 <strong>AI助手:</strong> 关于"${question}"的问题，我正在学习中。请访问AI配置页面设置您的API密钥以获得更好的回答。`);
-                }, 1000);
+                const response = await fetch(aiConfig.endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${aiConfig.apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: aiConfig.model,
+                        messages: [
+                            {role: 'system', content: systemPrompt},
+                            {role: 'user', content: actualQuestion}
+                        ],
+                        max_tokens: 200,
+                        temperature: 0.3
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const answer = data.choices[0].message.content;
+                    thinkingMsg.innerHTML = `🤖 <strong>AI助手 (${aiConfig.model}):</strong> ${answer}`;
+                } else {
+                    thinkingMsg.innerHTML = `🤖 <strong>AI助手:</strong> 抱歉，AI服务暂时不可用。请检查API配置。`;
+                }
+            } catch (error) {
+                console.error('AI调用失败:', error);
+                thinkingMsg.innerHTML = `🤖 <strong>AI助手:</strong> 连接AI服务失败，请检查网络或API配置。`;
             }
         }
         
