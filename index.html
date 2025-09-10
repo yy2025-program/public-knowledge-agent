@@ -288,7 +288,7 @@
                         <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: linear-gradient(135deg, #052659 0%, #7DA0CA 100%); 
                                    border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px;">🔐</div>
                         <h3 style="color: #C1E8FF; margin: 0; font-size: 24px; font-weight: 600;">管理员验证</h3>
-                        <p style="color: rgba(193, 232, 255, 0.7); margin: 10px 0 0; font-size: 14px;">请输入管理员密码以继续</p>
+                        <p style="color: rgba(193, 232, 255, 0.7); margin: 10px 0 0; font-size: 14px;">直接点击确认按钮即可进入</p>
                     </div>
                     
                     <div style="position: relative; margin-bottom: 25px;">
@@ -415,9 +415,23 @@
             
             try {
                 const aiConfig = getAIConfig();
+                console.log('AI配置:', aiConfig);
+                
                 const systemPrompt = language === 'chinese' ? '你是物流AI助手，用中文简洁回答。' :
                                    language === 'english' ? 'You are a logistics AI assistant, answer concisely in English.' :
                                    '你是物流AI助手，简洁回答。';
+                
+                const requestBody = {
+                    model: aiConfig.model,
+                    messages: [
+                        {role: 'system', content: systemPrompt},
+                        {role: 'user', content: actualQuestion}
+                    ],
+                    max_tokens: 200,
+                    temperature: 0.3
+                };
+                
+                console.log('请求数据:', requestBody);
                 
                 const response = await fetch(aiConfig.endpoint, {
                     method: 'POST',
@@ -425,27 +439,24 @@
                         'Authorization': `Bearer ${aiConfig.apiKey}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        model: aiConfig.model,
-                        messages: [
-                            {role: 'system', content: systemPrompt},
-                            {role: 'user', content: actualQuestion}
-                        ],
-                        max_tokens: 200,
-                        temperature: 0.3
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
+                console.log('响应状态:', response.status);
+                
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('响应数据:', data);
                     const answer = data.choices[0].message.content;
                     thinkingMsg.innerHTML = `🤖 <strong>AI助手 (${aiConfig.model}):</strong> ${answer}`;
                 } else {
-                    thinkingMsg.innerHTML = `🤖 <strong>AI助手:</strong> 抱歉，AI服务暂时不可用。请检查API配置。`;
+                    const errorText = await response.text();
+                    console.error('API错误:', response.status, errorText);
+                    thinkingMsg.innerHTML = `🤖 <strong>AI助手:</strong> API调用失败 (${response.status})，请检查API配置。`;
                 }
             } catch (error) {
                 console.error('AI调用失败:', error);
-                thinkingMsg.innerHTML = `🤖 <strong>AI助手:</strong> 连接AI服务失败，请检查网络或API配置。`;
+                thinkingMsg.innerHTML = `🤖 <strong>AI助手:</strong> 网络错误: ${error.message}`;
             }
         }
         
