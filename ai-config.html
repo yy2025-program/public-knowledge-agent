@@ -207,7 +207,9 @@
             const provider = document.getElementById('apiProvider').value;
             const config = apiConfigs[provider];
             
-            document.getElementById('apiEndpoint').value = config.endpoint;
+            const endpointInput = document.getElementById('apiEndpoint');
+            endpointInput.dataset.fullEndpoint = config.endpoint;
+            endpointInput.value = config.endpoint;
             
             const modelSelect = document.getElementById('apiModel');
             modelSelect.innerHTML = '';
@@ -253,7 +255,31 @@
         function toggleEndpoint() {
             const endpointInput = document.getElementById('apiEndpoint');
             const showEndpoint = document.getElementById('showEndpoint');
-            endpointInput.type = showEndpoint.checked ? 'text' : 'password';
+            
+            if (showEndpoint.checked) {
+                // 显示时只显示协议和域名，路径用*代替
+                const fullEndpoint = endpointInput.dataset.fullEndpoint || endpointInput.value;
+                if (fullEndpoint) {
+                    try {
+                        const url = new URL(fullEndpoint);
+                        const maskedEndpoint = `${url.protocol}//${url.hostname}/*****`;
+                        endpointInput.value = maskedEndpoint;
+                    } catch {
+                        // 如果不是有效URL，显示前8位和后4位
+                        if (fullEndpoint.length > 12) {
+                            const maskedEndpoint = fullEndpoint.substring(0, 8) + '*'.repeat(fullEndpoint.length - 12) + fullEndpoint.substring(fullEndpoint.length - 4);
+                            endpointInput.value = maskedEndpoint;
+                        }
+                    }
+                }
+                endpointInput.type = 'text';
+            } else {
+                // 隐藏时显示为密码格式
+                endpointInput.type = 'password';
+                if (endpointInput.dataset.fullEndpoint) {
+                    endpointInput.value = endpointInput.dataset.fullEndpoint;
+                }
+            }
         }
 
         // 保存API配置
@@ -262,7 +288,8 @@
             const apiKeyInput = document.getElementById('apiKey');
             const apiKey = (apiKeyInput.dataset.fullKey || apiKeyInput.value).trim();
             const model = document.getElementById('apiModel').value;
-            const endpoint = document.getElementById('apiEndpoint').value;
+            const endpointInput = document.getElementById('apiEndpoint');
+            const endpoint = endpointInput.dataset.fullEndpoint || endpointInput.value;
             
             if (!apiKey) {
                 showStatus('apiStatus', 'error', '请输入API密钥');
