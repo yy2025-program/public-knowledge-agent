@@ -394,13 +394,24 @@
         function searchKnowledgeBase(question) {
             try {
                 const knowledgeBase = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
+                console.log('知识库条目数:', knowledgeBase.length);
                 
                 if (knowledgeBase.length === 0) {
                     return null;
                 }
                 
-                const keywords = question.toLowerCase().split(' ').filter(word => word.length > 2);
+                // 扩展关键词匹配
+                const keywords = question.toLowerCase().split(' ').filter(word => word.length > 1);
+                console.log('搜索关键词:', keywords);
                 
+                // 如果问题包含"刚刚"、"刚才"等词，返回最新的条目
+                if (question.includes('刚刚') || question.includes('刚才') || question.includes('最新') || question.includes('最近')) {
+                    const latest = knowledgeBase.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+                    console.log('返回最新条目:', latest?.title);
+                    return latest;
+                }
+                
+                // 关键词匹配
                 for (const item of knowledgeBase) {
                     const content = (item.content || '').toLowerCase();
                     const title = (item.title || '').toLowerCase();
@@ -409,11 +420,13 @@
                         return count + (content.includes(keyword) ? 1 : 0) + (title.includes(keyword) ? 2 : 0);
                     }, 0);
                     
-                    if (matchCount >= Math.min(2, keywords.length)) {
+                    if (matchCount >= 1) { // 降低匹配门槛
+                        console.log('找到匹配条目:', item.title, '匹配度:', matchCount);
                         return item;
                     }
                 }
                 
+                console.log('未找到匹配条目');
                 return null;
             } catch (error) {
                 console.error('搜索知识库失败:', error);
