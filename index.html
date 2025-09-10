@@ -268,12 +268,111 @@
         }
         
         function checkAdminAccess(targetPage) {
-            const password = prompt('请输入管理员密码:');
+            showPasswordDialog(targetPage);
+        }
+        
+        function showPasswordDialog(targetPage) {
+            const dialog = document.createElement('div');
+            dialog.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(2, 16, 36, 0.9); display: flex; align-items: center; 
+                justify-content: center; z-index: 1000; backdrop-filter: blur(20px);
+            `;
+            
+            dialog.innerHTML = `
+                <div style="background: linear-gradient(135deg, rgba(2, 16, 36, 0.95) 0%, rgba(5, 38, 89, 0.9) 100%); 
+                           padding: 40px; border-radius: 24px; backdrop-filter: blur(30px); 
+                           border: 1px solid rgba(125, 160, 202, 0.3); min-width: 400px; text-align: center;
+                           box-shadow: 0 20px 60px rgba(2, 16, 36, 0.5);">
+                    <div style="margin-bottom: 30px;">
+                        <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: linear-gradient(135deg, #052659 0%, #7DA0CA 100%); 
+                                   border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px;">🔐</div>
+                        <h3 style="color: #C1E8FF; margin: 0; font-size: 24px; font-weight: 600;">管理员验证</h3>
+                        <p style="color: rgba(193, 232, 255, 0.7); margin: 10px 0 0; font-size: 14px;">请输入管理员密码以继续</p>
+                    </div>
+                    
+                    <div style="position: relative; margin-bottom: 25px;">
+                        <input type="password" id="adminPassword" placeholder="输入管理员密码..." 
+                               style="width: 100%; padding: 18px 50px 18px 20px; border: 1px solid rgba(125, 160, 202, 0.3); 
+                                      border-radius: 16px; background: linear-gradient(135deg, rgba(100, 131, 147, 0.1) 0%, rgba(125, 160, 202, 0.05) 100%); 
+                                      color: #C1E8FF; font-size: 16px; backdrop-filter: blur(10px); transition: all 0.3s ease;
+                                      box-sizing: border-box;">
+                        <button type="button" onclick="togglePasswordVisibility()" 
+                                style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); 
+                                       background: none; border: none; color: #7DA0CA; cursor: pointer; font-size: 18px;
+                                       padding: 5px; border-radius: 8px; transition: all 0.3s ease;"
+                                onmouseover="this.style.background='rgba(125, 160, 202, 0.1)'"
+                                onmouseout="this.style.background='none'" id="toggleBtn">👁️</button>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px; justify-content: center;">
+                        <button onclick="verifyPassword('${targetPage}')" 
+                                style="padding: 16px 32px; background: linear-gradient(135deg, #052659 0%, #7DA0CA 100%); 
+                                       color: white; border: none; border-radius: 16px; cursor: pointer; font-size: 16px; 
+                                       font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(5, 38, 89, 0.3);"
+                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(5, 38, 89, 0.4)'"
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(5, 38, 89, 0.3)'">确认</button>
+                        <button onclick="closePasswordDialog()" 
+                                style="padding: 16px 32px; background: rgba(125, 160, 202, 0.1); 
+                                       color: #C1E8FF; border: 1px solid rgba(125, 160, 202, 0.3); border-radius: 16px; 
+                                       cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s ease;"
+                                onmouseover="this.style.background='rgba(125, 160, 202, 0.2)'"
+                                onmouseout="this.style.background='rgba(125, 160, 202, 0.1)'">取消</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+            document.getElementById('adminPassword').focus();
+            
+            // 回车键确认
+            document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyPassword(targetPage);
+                }
+            });
+        }
+        
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('adminPassword');
+            const toggleBtn = document.getElementById('toggleBtn');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = '👁️';
+            }
+        }
+        
+        function verifyPassword(targetPage) {
+            const password = document.getElementById('adminPassword').value;
             if (password === 'admin123') {
-                alert('✅ 验证成功！');
+                closePasswordDialog();
                 window.location.href = targetPage;
-            } else if (password !== null) {
-                alert('❌ 密码错误！');
+            } else {
+                // 错误提示
+                const passwordInput = document.getElementById('adminPassword');
+                passwordInput.style.borderColor = '#ff6b6b';
+                passwordInput.style.boxShadow = '0 0 20px rgba(255, 107, 107, 0.3)';
+                passwordInput.value = '';
+                passwordInput.placeholder = '密码错误，请重新输入...';
+                
+                setTimeout(() => {
+                    passwordInput.style.borderColor = 'rgba(125, 160, 202, 0.3)';
+                    passwordInput.style.boxShadow = 'none';
+                    passwordInput.placeholder = '输入管理员密码...';
+                }, 2000);
+                
+                passwordInput.focus();
+            }
+        }
+        
+        function closePasswordDialog() {
+            const dialog = document.querySelector('div[style*="position: fixed"]');
+            if (dialog) {
+                document.body.removeChild(dialog);
             }
         }
         
