@@ -11,39 +11,6 @@
             background: linear-gradient(135deg, #021024 0%, #052659 25%, #648393 50%, #7DA0CA 75%, #C1E8FF 100%);
             min-height: 100vh;
             color: #C1E8FF;
-            transition: transform 0.3s ease;
-        }
-        
-        .zoom-controls {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            gap: 8px;
-        }
-
-        .zoom-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 1px solid rgba(193, 232, 255, 0.3);
-            background: rgba(2, 16, 36, 0.8);
-            color: #C1E8FF;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: bold;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-
-        .zoom-btn:hover {
-            background: rgba(5, 38, 89, 0.9);
-            border-color: #7DA0CA;
-            transform: scale(1.1);
         }
         
         .container { 
@@ -262,11 +229,6 @@
     </style>
 </head>
 <body>
-    <div class="zoom-controls">
-        <button class="zoom-btn" onclick="zoomOut()" title="缩小">-</button>
-        <button class="zoom-btn" onclick="zoomIn()" title="放大">+</button>
-    </div>
-    
     <div class="container">
         <div class="header">
             <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶</button>
@@ -501,24 +463,6 @@
                 document.documentElement.requestFullscreen();
             } else {
                 document.exitFullscreen();
-            }
-        }
-        
-        let zoomLevel = 1;
-        
-        function zoomIn() {
-            if (zoomLevel < 1.5) {
-                zoomLevel += 0.1;
-                document.body.style.transform = `scale(${zoomLevel})`;
-                document.body.style.transformOrigin = 'top center';
-            }
-        }
-        
-        function zoomOut() {
-            if (zoomLevel > 0.7) {
-                zoomLevel -= 0.1;
-                document.body.style.transform = `scale(${zoomLevel})`;
-                document.body.style.transformOrigin = 'top center';
             }
         }
         
