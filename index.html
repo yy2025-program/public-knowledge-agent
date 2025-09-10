@@ -248,3 +248,69 @@
             <div class="chat-box" id="chatBox">
                 <div class="welcome-message">
                     👋 <strong>你好！我是AI知识助手</strong>，可以回答seller facing的物流专业问题，请问有什么可以帮助您的呢？
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" id="questionInput" placeholder="请输入您的问题..." onkeypress="handleKeyPress(event)">
+                <button onclick="askQuestion()" id="askButton">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showDebugInfo() {
+            alert('🔧 调试信息:\n\n版本: 修复版 v3.0\n状态: 正常\n功能: 基础功能可用');
+        }
+        
+        function testFunction() {
+            alert('JavaScript正常工作！');
+        }
+        
+        function checkAdminAccess(targetPage) {
+            const password = prompt('请输入管理员密码:');
+            if (password === 'admin123') {
+                alert('✅ 验证成功！');
+                window.location.href = targetPage;
+            } else if (password !== null) {
+                alert('❌ 密码错误！');
+            }
+        }
+        
+        function askQuestion() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+            if (question) {
+                addMessage('user', question);
+                input.value = '';
+                
+                // 简单的AI回答
+                setTimeout(() => {
+                    addMessage('bot', `🤖 <strong>AI助手:</strong> 关于"${question}"的问题，我正在学习中。请访问AI配置页面设置您的API密钥以获得更好的回答。`);
+                }, 1000);
+            }
+        }
+        
+        function addMessage(sender, message) {
+            const chatBox = document.getElementById('chatBox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            if (sender === 'user') {
+                messageDiv.innerHTML = `<strong>您:</strong> ${message}`;
+            } else {
+                messageDiv.innerHTML = message;
+            }
+            
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                askQuestion();
+            }
+        }
+    </script>
+</body>
+</html>
