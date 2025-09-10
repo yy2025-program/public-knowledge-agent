@@ -136,7 +136,7 @@
             
             <div class="form-group">
                 <label>API Key:</label>
-                <input type="password" id="apiKey" placeholder="输入API密钥">
+                <input type="password" id="apiKey" placeholder="输入API密钥" onblur="saveFullApiKey()">
                 <small style="color: rgba(226, 232, 240, 0.6); display: block; margin-top: 5px;">
                     <input type="checkbox" id="showApiKey" onchange="toggleApiKey()"> 显示密钥
                 </small>
@@ -223,7 +223,30 @@
         function toggleApiKey() {
             const apiKeyInput = document.getElementById('apiKey');
             const showApiKey = document.getElementById('showApiKey');
-            apiKeyInput.type = showApiKey.checked ? 'text' : 'password';
+            
+            if (showApiKey.checked) {
+                // 显示时只显示前4位和后4位，中间用*代替
+                const fullKey = apiKeyInput.dataset.fullKey || apiKeyInput.value;
+                if (fullKey && fullKey.length > 8) {
+                    const maskedKey = fullKey.substring(0, 4) + '*'.repeat(fullKey.length - 8) + fullKey.substring(fullKey.length - 4);
+                    apiKeyInput.value = maskedKey;
+                }
+                apiKeyInput.type = 'text';
+            } else {
+                // 隐藏时显示为密码格式
+                apiKeyInput.type = 'password';
+                if (apiKeyInput.dataset.fullKey) {
+                    apiKeyInput.value = apiKeyInput.dataset.fullKey;
+                }
+            }
+        }
+
+        // 保存完整密钥到dataset
+        function saveFullApiKey() {
+            const apiKeyInput = document.getElementById('apiKey');
+            if (apiKeyInput.value && !apiKeyInput.value.includes('*')) {
+                apiKeyInput.dataset.fullKey = apiKeyInput.value;
+            }
         }
 
         // 切换API端点显示
@@ -236,7 +259,8 @@
         // 保存API配置
         function saveApiConfig() {
             const provider = document.getElementById('apiProvider').value;
-            const apiKey = document.getElementById('apiKey').value.trim();
+            const apiKeyInput = document.getElementById('apiKey');
+            const apiKey = (apiKeyInput.dataset.fullKey || apiKeyInput.value).trim();
             const model = document.getElementById('apiModel').value;
             const endpoint = document.getElementById('apiEndpoint').value;
             
@@ -318,7 +342,13 @@
             if (saved) {
                 const config = JSON.parse(saved);
                 document.getElementById('apiProvider').value = config.provider || 'siliconflow';
-                document.getElementById('apiKey').value = config.apiKey || '';
+                
+                const apiKeyInput = document.getElementById('apiKey');
+                if (config.apiKey) {
+                    apiKeyInput.dataset.fullKey = config.apiKey;
+                    apiKeyInput.value = config.apiKey;
+                }
+                
                 updateApiConfig();
                 document.getElementById('apiModel').value = config.model || '';
             } else {
