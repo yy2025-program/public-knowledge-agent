@@ -349,6 +349,7 @@
         function verifyPassword(targetPage) {
             const password = document.getElementById('adminPassword').value;
             if (password === 'admin123') {
+                sessionStorage.setItem('admin_authenticated', 'true');
                 closePasswordDialog();
                 window.location.href = targetPage;
             } else {
