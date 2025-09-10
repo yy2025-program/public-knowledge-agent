@@ -878,7 +878,8 @@
                             item.url = `internal://${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                         }
                         
-                        const exists = existingKnowledge.some(existing => existing.url === item.url || existing.title === item.title);
+                        // 只检查URL重复，不检查标题重复
+                        const exists = existingKnowledge.some(existing => existing.url === item.url);
                         if (!exists) {
                             existingKnowledge.push({
                                 ...item,
