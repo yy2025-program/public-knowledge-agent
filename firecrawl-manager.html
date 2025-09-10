@@ -514,7 +514,11 @@
                         includeTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tr', 'td', 'th', 'ul', 'ol', 'li'],
                         excludeTags: ['script', 'style', 'noscript', 'nav', 'footer'],
                         waitFor: 5000,
-                        timeout: 30000
+                        timeout: 30000,
+                        actions: [
+                            { type: 'scroll', direction: 'down' },
+                            { type: 'wait', milliseconds: 2000 }
+                        ]
                     })
                 });
 
