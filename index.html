@@ -391,6 +391,36 @@
             };
         }
 
+        function searchKnowledgeBase(question) {
+            try {
+                const knowledgeBase = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
+                
+                if (knowledgeBase.length === 0) {
+                    return null;
+                }
+                
+                const keywords = question.toLowerCase().split(' ').filter(word => word.length > 2);
+                
+                for (const item of knowledgeBase) {
+                    const content = (item.content || '').toLowerCase();
+                    const title = (item.title || '').toLowerCase();
+                    
+                    const matchCount = keywords.reduce((count, keyword) => {
+                        return count + (content.includes(keyword) ? 1 : 0) + (title.includes(keyword) ? 2 : 0);
+                    }, 0);
+                    
+                    if (matchCount >= Math.min(2, keywords.length)) {
+                        return item;
+                    }
+                }
+                
+                return null;
+            } catch (error) {
+                console.error('搜索知识库失败:', error);
+                return null;
+            }
+        }
+
         async function askQuestion() {
             const input = document.getElementById('questionInput');
             let question = input.value.trim();
@@ -414,19 +444,31 @@
             
             const thinkingMsg = addMessage('bot', '🤖 AI正在思考...');
             
+            // 先搜索本地知识库
+            const knowledgeMatch = searchKnowledgeBase(actualQuestion);
+            
             try {
                 const aiConfig = getAIConfig();
                 console.log('AI配置:', aiConfig);
                 
-                const systemPrompt = language === 'chinese' ? '你是物流AI助手，用中文简洁回答。' :
+                let systemPrompt = language === 'chinese' ? '你是物流AI助手，用中文简洁回答。' :
                                    language === 'english' ? 'You are a logistics AI assistant, answer concisely in English.' :
                                    '你是物流AI助手，简洁回答。';
+                
+                let userContent = actualQuestion;
+                
+                // 如果找到知识库匹配，增强提示
+                if (knowledgeMatch) {
+                    const context = `基于我的知识库，关于"${actualQuestion}"的信息：\n${knowledgeMatch.content.substring(0, 800)}...`;
+                    userContent = `${context}\n\n问题：${actualQuestion}`;
+                    systemPrompt += ' 请结合提供的知识库信息回答。';
+                }
                 
                 const requestBody = {
                     model: aiConfig.model,
                     messages: [
                         {role: 'system', content: systemPrompt},
-                        {role: 'user', content: actualQuestion}
+                        {role: 'user', content: userContent}
                     ],
                     max_tokens: 200,
                     temperature: 0.3
@@ -450,7 +492,14 @@
                     console.log('响应数据:', data);
                     if (data.choices && data.choices[0] && data.choices[0].message) {
                         const answer = data.choices[0].message.content;
-                        thinkingMsg.innerHTML = `🤖 <strong>AI助手 (${aiConfig.model}):</strong> ${answer}`;
+                        let displayAnswer = `🤖 <strong>AI助手 (${aiConfig.model}):</strong> ${answer}`;
+                        
+                        // 如果使用了知识库，显示来源
+                        if (knowledgeMatch) {
+                            displayAnswer += `<br><br><small>📚 参考来源: ${knowledgeMatch.url || '本地知识库'}</small>`;
+                        }
+                        
+                        thinkingMsg.innerHTML = displayAnswer;
                     } else {
                         thinkingMsg.innerHTML = `🤖 <strong>AI助手:</strong> API返回数据格式异常`;
                     }
