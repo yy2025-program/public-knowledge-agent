@@ -260,7 +260,19 @@
 
     <script>
         function showDebugInfo() {
-            alert('🔧 调试信息:\n\n版本: 修复版 v3.0\n状态: 正常\n功能: 基础功能可用');
+            const knowledgeBase = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
+            const aiConfig = JSON.parse(localStorage.getItem('ai_api_config') || '{}');
+            
+            alert(`🔧 调试信息:
+            
+版本: 修复版 v3.0
+状态: 正常
+功能: 基础功能可用
+知识库条目: ${knowledgeBase.length}条
+AI配置: ${aiConfig.provider || '未配置'}
+
+最新条目: ${knowledgeBase.length > 0 ? knowledgeBase[knowledgeBase.length - 1].title : '无'}
+            `);
         }
         
         function testFunction() {
@@ -397,36 +409,45 @@
                 console.log('知识库条目数:', knowledgeBase.length);
                 
                 if (knowledgeBase.length === 0) {
+                    console.log('知识库为空');
                     return null;
                 }
                 
-                // 扩展关键词匹配
-                const keywords = question.toLowerCase().split(' ').filter(word => word.length > 1);
-                console.log('搜索关键词:', keywords);
+                // 如果问题包含时间相关词汇，直接返回最新条目
+                const timeKeywords = ['刚刚', '刚才', '最新', '最近', '刚', '刚爬取', '刚爬'];
+                const hasTimeKeyword = timeKeywords.some(keyword => question.includes(keyword));
                 
-                // 如果问题包含"刚刚"、"刚才"等词，返回最新的条目
-                if (question.includes('刚刚') || question.includes('刚才') || question.includes('最新') || question.includes('最近')) {
+                if (hasTimeKeyword) {
                     const latest = knowledgeBase.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-                    console.log('返回最新条目:', latest?.title);
+                    console.log('检测到时间关键词，返回最新条目:', latest?.title);
                     return latest;
                 }
                 
-                // 关键词匹配
+                // 关键词匹配（降低门槛）
+                const keywords = question.toLowerCase().split(/[\s，。！？、]+/).filter(word => word.length > 1);
+                console.log('搜索关键词:', keywords);
+                
                 for (const item of knowledgeBase) {
                     const content = (item.content || '').toLowerCase();
                     const title = (item.title || '').toLowerCase();
                     
-                    const matchCount = keywords.reduce((count, keyword) => {
-                        return count + (content.includes(keyword) ? 1 : 0) + (title.includes(keyword) ? 2 : 0);
-                    }, 0);
-                    
-                    if (matchCount >= 1) { // 降低匹配门槛
-                        console.log('找到匹配条目:', item.title, '匹配度:', matchCount);
-                        return item;
+                    // 任意一个关键词匹配就返回
+                    for (const keyword of keywords) {
+                        if (content.includes(keyword) || title.includes(keyword)) {
+                            console.log('找到匹配条目:', item.title, '关键词:', keyword);
+                            return item;
+                        }
                     }
                 }
                 
-                console.log('未找到匹配条目');
+                // 如果没有匹配，返回最新的条目作为fallback
+                if (knowledgeBase.length > 0) {
+                    const latest = knowledgeBase.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+                    console.log('无匹配，返回最新条目作为fallback:', latest?.title);
+                    return latest;
+                }
+                
+                console.log('未找到任何条目');
                 return null;
             } catch (error) {
                 console.error('搜索知识库失败:', error);
@@ -459,6 +480,16 @@
             
             // 先搜索本地知识库
             const knowledgeMatch = searchKnowledgeBase(actualQuestion);
+            console.log('知识库搜索结果:', knowledgeMatch);
+            
+            // 如果没找到，尝试列出所有知识库内容
+            if (!knowledgeMatch) {
+                const allKnowledge = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
+                console.log('所有知识库内容:', allKnowledge);
+                if (allKnowledge.length > 0) {
+                    console.log('最新条目:', allKnowledge[allKnowledge.length - 1]);
+                }
+            }
             
             try {
                 const aiConfig = getAIConfig();
