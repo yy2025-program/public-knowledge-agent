@@ -447,12 +447,16 @@
                 if (response.ok) {
                     const data = await response.json();
                     console.log('响应数据:', data);
-                    const answer = data.choices[0].message.content;
-                    thinkingMsg.innerHTML = `🤖 <strong>AI助手 (${aiConfig.model}):</strong> ${answer}`;
+                    if (data.choices && data.choices[0] && data.choices[0].message) {
+                        const answer = data.choices[0].message.content;
+                        thinkingMsg.innerHTML = `🤖 <strong>AI助手 (${aiConfig.model}):</strong> ${answer}`;
+                    } else {
+                        thinkingMsg.innerHTML = `🤖 <strong>AI助手:</strong> API返回数据格式异常`;
+                    }
                 } else {
                     const errorText = await response.text();
                     console.error('API错误:', response.status, errorText);
-                    thinkingMsg.innerHTML = `🤖 <strong>AI助手:</strong> API调用失败 (${response.status})，请检查API配置。`;
+                    thinkingMsg.innerHTML = `🤖 <strong>AI助手:</strong> API调用失败 (${response.status})`;
                 }
             } catch (error) {
                 console.error('AI调用失败:', error);
