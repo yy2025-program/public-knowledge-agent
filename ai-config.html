@@ -209,7 +209,7 @@
             
             const endpointInput = document.getElementById('apiEndpoint');
             endpointInput.dataset.fullEndpoint = config.endpoint;
-            endpointInput.value = config.endpoint;
+            endpointInput.value = ''; // 默认显示为空白
             
             const modelSelect = document.getElementById('apiModel');
             modelSelect.innerHTML = '';

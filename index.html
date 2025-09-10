@@ -288,7 +288,7 @@
                         <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: linear-gradient(135deg, #052659 0%, #7DA0CA 100%); 
                                    border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px;">🔐</div>
                         <h3 style="color: #C1E8FF; margin: 0; font-size: 24px; font-weight: 600;">管理员验证</h3>
-                        <p style="color: rgba(193, 232, 255, 0.7); margin: 10px 0 0; font-size: 14px;">直接点击确认按钮即可进入</p>
+                        <p style="color: rgba(193, 232, 255, 0.7); margin: 10px 0 0; font-size: 14px;">请输入管理员密码以继续</p>
                     </div>
                     
                     <div style="position: relative; margin-bottom: 25px;">
@@ -348,7 +348,7 @@
         
         function verifyPassword(targetPage) {
             const password = document.getElementById('adminPassword').value;
-            if (password === '') {
+            if (password === 'admin123') {
                 closePasswordDialog();
                 window.location.href = targetPage;
             } else {
