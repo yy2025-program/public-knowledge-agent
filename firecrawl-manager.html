@@ -317,10 +317,15 @@
                 <div class="form-group">
                     <label for="extractFormat">提取格式:</label>
                     <select id="extractFormat">
-                        <option value="markdown">Markdown</option>
-                        <option value="html">HTML</option>
-                        <option value="text">纯文本</option>
+                        <option value="markdown" selected>Markdown (推荐 - AI友好)</option>
+                        <option value="html">HTML (完整结构)</option>
+                        <option value="text">纯文本 (简洁)</option>
+                        <option value="links">链接提取</option>
+                        <option value="screenshot">截图</option>
                     </select>
+                    <small style="color: #7DA0CA; margin-top: 5px; display: block;">
+                        💡 Markdown格式最适合AI理解和知识库存储
+                    </small>
                 </div>
                 
                 <div class="form-group">
@@ -504,10 +509,10 @@
                     },
                     body: JSON.stringify({
                         url: url,
-                        formats: [format],
+                        formats: ['markdown', 'text'], // 同时获取markdown和text
                         onlyMainContent: onlyMainContent,
                         includeTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'article', 'section', 'div', 'span', 'li', 'ul', 'ol'],
-                        excludeTags: ['nav', 'footer', 'aside', 'script', 'style', 'noscript', 'iframe'],
+                        excludeTags: ['nav', 'footer', 'aside', 'script', 'style', 'noscript', 'iframe', 'header'],
                         waitFor: 3000,
                         timeout: 30000
                     })
@@ -516,13 +521,22 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    // 优先使用用户选择的格式，fallback到markdown
+                    let content = data.data[format] || data.data.markdown || data.data.text || data.data.html;
+                    
                     const crawledData = {
                         url: url,
                         title: data.data.metadata?.title || '无标题',
-                        content: data.data[format] || data.data.markdown || data.data.html,
+                        content: content,
                         timestamp: new Date().toISOString(),
                         format: format,
-                        metadata: data.data.metadata || {}
+                        metadata: data.data.metadata || {},
+                        // 保存所有格式以备后用
+                        allFormats: {
+                            markdown: data.data.markdown,
+                            text: data.data.text,
+                            html: data.data.html
+                        }
                     };
 
                     // 保存到本地知识库
