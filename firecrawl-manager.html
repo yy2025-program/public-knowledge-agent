@@ -509,12 +509,17 @@
                     },
                     body: JSON.stringify({
                         url: url,
-                        formats: ['markdown', 'text'], // 同时获取markdown和text
-                        onlyMainContent: onlyMainContent,
-                        includeTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'article', 'section', 'div', 'span', 'li', 'ul', 'ol'],
-                        excludeTags: ['nav', 'footer', 'aside', 'script', 'style', 'noscript', 'iframe', 'header'],
-                        waitFor: 3000,
-                        timeout: 30000
+                        formats: ['markdown', 'text'],
+                        onlyMainContent: false, // 获取完整页面内容
+                        includeTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'article', 'section', 'div', 'span', 'li', 'ul', 'ol', 'table', 'tr', 'td', 'th'],
+                        excludeTags: ['script', 'style', 'noscript'],
+                        waitFor: 5000, // 等待5秒确保动态内容加载
+                        timeout: 45000, // 增加超时时间
+                        actions: [
+                            { type: 'wait', milliseconds: 3000 },
+                            { type: 'scroll', direction: 'down' },
+                            { type: 'wait', milliseconds: 2000 }
+                        ]
                     })
                 });
 
