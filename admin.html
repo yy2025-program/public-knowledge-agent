@@ -374,45 +374,60 @@
             const statusDiv = document.getElementById('systemStatus');
             statusDiv.innerHTML = '<div class="status info">正在检查系统状态...</div>';
 
+            let statusHTML = '';
+            
+            // 检查AI API配置
             try {
-                // 检查各个API端点
-                const endpoints = [
-                    { name: 'Ask API', url: '/api/ask' },
-                    { name: 'Crawl API', url: '/api/crawl' },
-                    { name: 'Database API', url: '/api/database' }
-                ];
-
-                let statusHTML = '';
-                
-                for (const endpoint of endpoints) {
-                    try {
-                        const response = await fetch(`${API_BASE_URL}${endpoint.url}`, {
-                            headers: {'ngrok-skip-browser-warning': 'true'}
-                        });
-                        const data = await response.json();
-                        
-                        if (response.ok && data.status === 'ok') {
-                            statusHTML += `<div class="status success">✅ ${endpoint.name}: 正常运行</div>`;
-                            
-                            // 显示功能状态
-                            if (data.features) {
-                                const features = Object.entries(data.features)
-                                    .map(([key, value]) => `${key}: ${value ? '✅' : '❌'}`)
-                                    .join(', ');
-                                statusHTML += `<div class="status info">功能状态: ${features}</div>`;
-                            }
-                        } else {
-                            statusHTML += `<div class="status error">❌ ${endpoint.name}: 响应异常</div>`;
-                        }
-                    } catch (error) {
-                        statusHTML += `<div class="status error">❌ ${endpoint.name}: 连接失败</div>`;
+                const aiConfig = JSON.parse(localStorage.getItem('ai_api_config') || '{}');
+                if (aiConfig.apiKey && aiConfig.endpoint) {
+                    // 测试AI API连接
+                    const response = await fetch(aiConfig.endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${aiConfig.apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: aiConfig.model,
+                            messages: [{role: 'user', content: 'test'}],
+                            max_tokens: 1
+                        })
+                    });
+                    
+                    if (response.ok || response.status === 400) { // 400也算连接成功，只是参数问题
+                        statusHTML += `<div class="status success">✅ AI API (${aiConfig.provider}): 连接正常</div>`;
+                    } else {
+                        statusHTML += `<div class="status error">❌ AI API: 连接失败 (${response.status})</div>`;
                     }
+                } else {
+                    statusHTML += `<div class="status warning">⚠️ AI API: 未配置</div>`;
                 }
-
-                statusDiv.innerHTML = statusHTML;
             } catch (error) {
-                statusDiv.innerHTML = '<div class="status error">系统状态检查失败</div>';
+                statusHTML += `<div class="status error">❌ AI API: 连接失败</div>`;
             }
+            
+            // 检查爬取功能
+            try {
+                const crawlConfig = JSON.parse(localStorage.getItem('firecrawl_config') || '{}');
+                if (crawlConfig.apiKey) {
+                    statusHTML += `<div class="status success">✅ Crawl API (Firecrawl): 已配置</div>`;
+                } else {
+                    statusHTML += `<div class="status warning">⚠️ Crawl API: 未配置</div>`;
+                }
+            } catch (error) {
+                statusHTML += `<div class="status warning">⚠️ Crawl API: 配置检查失败</div>`;
+            }
+            
+            // 检查数据库（本地存储）
+            try {
+                const knowledgeBase = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
+                const count = knowledgeBase.length;
+                statusHTML += `<div class="status success">✅ Database (LocalStorage): 正常运行 (${count}条记录)</div>`;
+            } catch (error) {
+                statusHTML += `<div class="status error">❌ Database: 访问失败</div>`;
+            }
+
+            statusDiv.innerHTML = statusHTML;
         }
 
         async function crawlWebsite() {
