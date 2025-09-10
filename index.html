@@ -241,6 +241,7 @@
             <button class="nav-btn" onclick="checkAdminAccess('admin.html')">⚙️ 管理面板</button>
             <button class="nav-btn" onclick="checkAdminAccess('firecrawl-manager.html')">🔥 爬取管理</button>
             <button class="nav-btn active" onclick="showDebugInfo()">🔧 调试信息</button>
+            <button class="nav-btn" onclick="testFunction()" style="background: red;">🧪 测试</button>
         </div>
         
         <div class="chat-container">
@@ -311,6 +312,12 @@
                 console.error('搜索知识库失败:', error);
                 return null;
             }
+        }
+
+        // 测试函数
+        function testFunction() {
+            console.log('Functions are working');
+            alert('Functions are working');
         }
 
         // 获取AI配置
