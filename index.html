@@ -11,6 +11,10 @@
             background: linear-gradient(135deg, #021024 0%, #052659 25%, #648393 50%, #7DA0CA 75%, #C1E8FF 100%);
             min-height: 100vh;
             color: #C1E8FF;
+            transform: scale(0.8);
+            transform-origin: top center;
+            width: 125%;
+            margin-left: -12.5%;
         }
         
         .container { 
@@ -220,6 +224,28 @@
             border-radius: 3px;
         }
         
+        .fullscreen-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #052659 0%, #7DA0CA 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 6.4px 20px rgba(5, 38, 89, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .fullscreen-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 9.6px 28px rgba(5, 38, 89, 0.5);
+        }
+
         @media (max-width: 768px) {
             .header h1 { font-size: 32px; }
             .nav-buttons { justify-content: center; }
@@ -577,6 +603,18 @@ AI配置: ${aiConfig.provider || '未配置'}
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 askQuestion();
+            }
+        }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('全屏失败:', err);
+                });
+            } else {
+                document.exitFullscreen().catch(err => {
+                    console.log('退出全屏失败:', err);
+                });
             }
         }
     </script>
