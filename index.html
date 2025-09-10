@@ -613,10 +613,8 @@ AI配置: ${aiConfig.provider || '未配置'}
                     document.body.style.transformOrigin = 'center center';
                     document.body.style.width = '80%';
                     document.body.style.marginLeft = '10%';
-                    console.log('已进入全屏模式');
                 }).catch(err => {
                     console.log('全屏失败:', err);
-                    alert('无法进入全屏模式，请检查浏览器设置');
                 });
             } else {
                 document.exitFullscreen().then(() => {
@@ -624,7 +622,6 @@ AI配置: ${aiConfig.provider || '未配置'}
                     document.body.style.transformOrigin = 'top center';
                     document.body.style.width = '125%';
                     document.body.style.marginLeft = '-12.5%';
-                    alert('已退出全屏模式');
                 }).catch(err => {
                     console.log('退出全屏失败:', err);
                 });
