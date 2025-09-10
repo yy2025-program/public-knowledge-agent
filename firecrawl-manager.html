@@ -509,19 +509,10 @@
                     },
                     body: JSON.stringify({
                         url: url,
-                        formats: ['markdown', 'html'],
+                        formats: ['markdown'],
                         onlyMainContent: false,
                         waitFor: 8000,
-                        timeout: 60000,
-                        actions: [
-                            { type: 'wait', milliseconds: 3000 },
-                            { type: 'scroll', direction: 'down' },
-                            { type: 'wait', milliseconds: 2000 },
-                            { type: 'scroll', direction: 'down' },
-                            { type: 'wait', milliseconds: 2000 },
-                            { type: 'scroll', direction: 'up' },
-                            { type: 'wait', milliseconds: 1000 }
-                        ]
+                        timeout: 45000
                     })
                 });
 
