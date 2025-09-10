@@ -509,15 +509,18 @@
                     },
                     body: JSON.stringify({
                         url: url,
-                        formats: ['markdown'],
+                        formats: ['markdown', 'html'],
                         onlyMainContent: false,
-                        includeTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'tr', 'td', 'th', 'ul', 'ol', 'li'],
-                        excludeTags: ['script', 'style', 'noscript', 'nav', 'footer'],
-                        waitFor: 5000,
-                        timeout: 30000,
+                        waitFor: 8000,
+                        timeout: 60000,
                         actions: [
+                            { type: 'wait', milliseconds: 3000 },
                             { type: 'scroll', direction: 'down' },
-                            { type: 'wait', milliseconds: 2000 }
+                            { type: 'wait', milliseconds: 2000 },
+                            { type: 'scroll', direction: 'down' },
+                            { type: 'wait', milliseconds: 2000 },
+                            { type: 'scroll', direction: 'up' },
+                            { type: 'wait', milliseconds: 1000 }
                         ]
                     })
                 });
