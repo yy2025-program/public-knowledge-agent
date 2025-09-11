@@ -297,6 +297,7 @@
                 
                 <button class="btn" onclick="searchContent()">搜索</button>
                 <button class="btn btn-secondary" onclick="listAllContent()">列出所有内容</button>
+                <button class="btn btn-danger" onclick="clearAllContent()">🗑️ 清空所有内容</button>
                 
                 <div id="contentResult" class="result-box" style="display: none;"></div>
             </div>
@@ -364,6 +365,15 @@
 
     <script>
         const API_BASE_URL = 'https://388369108e2c.ngrok-free.app';
+
+        // 清空所有内容
+        function clearAllContent() {
+            if (confirm('确定要清空所有知识库内容吗？此操作不可恢复！')) {
+                localStorage.removeItem('firecrawl_knowledge_base');
+                document.getElementById('contentResult').innerHTML = '<div class="status success">✅ 已清空所有知识库内容</div>';
+                document.getElementById('contentResult').style.display = 'block';
+            }
+        }
 
         // 页面加载时检查系统状态
         window.onload = function() {
