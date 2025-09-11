@@ -476,12 +476,22 @@ AI配置: ${aiConfig.provider || '未配置'}
                 const scoredItems = knowledgeBase.map(item => {
                     const content = (item.content || '').toLowerCase();
                     const title = (item.title || '').toLowerCase();
+                    const url = (item.url || '').toLowerCase();
                     
                     console.log(`检查条目: ${item.title}`);
                     console.log(`来源: ${item.source || 'unknown'}`);
                     console.log(`内容长度: ${content.length}`);
                     
                     let score = 0;
+                    
+                    // 精确匹配亚马逊相关内容
+                    const amazonTerms = ['亚马逊仓储', '亚马逊分拨', 'amazon warehouse', 'awd', '商品资格', '可传送', '箱子'];
+                    for (const term of amazonTerms) {
+                        if (title.includes(term) || content.includes(term) || url.includes(term)) {
+                            score += 50; // 亚马逊相关内容高分
+                            console.log(`亚马逊术语 "${term}" 匹配: +50分`);
+                        }
+                    }
                     
                     // 检查每个关键词
                     for (const keyword of keywords) {
@@ -495,14 +505,12 @@ AI配置: ${aiConfig.provider || '未配置'}
                         }
                     }
                     
-                    // 特殊处理：如果问题包含"亚马逊"相关词汇
-                    const amazonKeywords = ['亚马逊', 'amazon', '仓储', '分拨', '商品资格', 'awd', '服务计划'];
-                    for (const keyword of amazonKeywords) {
-                        if (question.toLowerCase().includes(keyword)) {
-                            if (title.includes(keyword) || content.includes(keyword)) {
-                                score += 20;
-                                console.log(`亚马逊关键词 "${keyword}" 匹配: +20分`);
-                            }
+                    // 降低通用内容的分数
+                    const genericTerms = ['物流', '成本', '控制', '管理', 'wms'];
+                    for (const term of genericTerms) {
+                        if (title.includes(term) && !content.includes('亚马逊') && !content.includes('amazon')) {
+                            score -= 20; // 通用内容降分
+                            console.log(`通用术语 "${term}" 降分: -20分`);
                         }
                     }
                     
