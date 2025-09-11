@@ -289,7 +289,7 @@
             const knowledgeBase = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
             const aiConfig = JSON.parse(localStorage.getItem('ai_api_config') || '{}');
             
-            alert(`🔧 调试信息:
+            let debugText = `🔧 调试信息:
             
 版本: 修复版 v3.0
 状态: 正常
@@ -297,8 +297,18 @@
 知识库条目: ${knowledgeBase.length}条
 AI配置: ${aiConfig.provider || '未配置'}
 
-最新条目: ${knowledgeBase.length > 0 ? knowledgeBase[knowledgeBase.length - 1].title : '无'}
-            `);
+知识库详情:`;
+
+            knowledgeBase.forEach((item, index) => {
+                debugText += `\n${index + 1}. 标题: ${item.title}`;
+                debugText += `\n   来源: ${item.source || 'unknown'}`;
+                debugText += `\n   URL: ${item.url}`;
+                debugText += `\n   内容长度: ${(item.content || '').length}字符`;
+                debugText += `\n   内容预览: ${(item.content || '').substring(0, 100)}...`;
+                debugText += `\n`;
+            });
+
+            alert(debugText);
         }
         
         function testFunction() {
