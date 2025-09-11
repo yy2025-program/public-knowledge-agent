@@ -727,6 +727,14 @@
 
         // 列出所有内容
         function listAllContent() {
+            const resultDiv = document.getElementById('contentResult');
+            
+            // 如果已经显示内容，则收回
+            if (resultDiv.style.display === 'block') {
+                resultDiv.style.display = 'none';
+                return;
+            }
+            
             document.getElementById('searchQuery').value = '';
             searchContent();
         }
