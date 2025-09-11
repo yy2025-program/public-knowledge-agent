@@ -433,7 +433,11 @@ AI配置: ${aiConfig.provider || '未配置'}
             try {
                 const knowledgeBase = JSON.parse(localStorage.getItem('firecrawl_knowledge_base') || '[]');
                 console.log('知识库条目数:', knowledgeBase.length);
-                console.log('所有知识库条目:', knowledgeBase.map(item => ({ title: item.title, url: item.url })));
+                console.log('所有知识库条目:', knowledgeBase.map(item => ({ 
+                    title: item.title, 
+                    url: item.url,
+                    contentPreview: (item.content || '').substring(0, 100) + '...'
+                })));
                 
                 if (knowledgeBase.length === 0) {
                     console.log('知识库为空');
