@@ -467,28 +467,36 @@ AI配置: ${aiConfig.provider || '未配置'}
                     const content = (item.content || '').toLowerCase();
                     const title = (item.title || '').toLowerCase();
                     
+                    console.log(`检查条目: ${item.title}`);
+                    console.log(`来源: ${item.source || 'unknown'}`);
+                    console.log(`内容长度: ${content.length}`);
+                    
                     let score = 0;
                     
                     // 检查每个关键词
                     for (const keyword of keywords) {
                         if (title.includes(keyword)) {
                             score += 10; // 标题匹配权重更高
+                            console.log(`标题匹配关键词 "${keyword}": +10分`);
                         }
                         if (content.includes(keyword)) {
                             score += 3; // 内容匹配
+                            console.log(`内容匹配关键词 "${keyword}": +3分`);
                         }
                     }
                     
                     // 特殊处理：如果问题包含"亚马逊"相关词汇
-                    const amazonKeywords = ['亚马逊', 'amazon', '仓储', '分拨', '商品资格', 'awd'];
+                    const amazonKeywords = ['亚马逊', 'amazon', '仓储', '分拨', '商品资格', 'awd', '服务计划'];
                     for (const keyword of amazonKeywords) {
                         if (question.toLowerCase().includes(keyword)) {
                             if (title.includes(keyword) || content.includes(keyword)) {
                                 score += 20;
+                                console.log(`亚马逊关键词 "${keyword}" 匹配: +20分`);
                             }
                         }
                     }
                     
+                    console.log(`条目 "${item.title}" 总分: ${score}`);
                     return { item, score };
                 });
                 

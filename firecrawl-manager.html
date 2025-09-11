@@ -526,6 +526,7 @@
                         timestamp: new Date().toISOString(),
                         format: format,
                         metadata: data.data.metadata || {},
+                        source: 'firecrawl', // 标记来源
                         // 保存所有格式以备后用
                         allFormats: {
                             markdown: data.data.markdown,
